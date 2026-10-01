@@ -1,0 +1,17 @@
+{
+  "name": "@regletto/addon-sdk",
+  "version": "0.1.0",
+  "description": "Create, check, build and test add-ons for Regletto Writing.",
+  "license": "MIT",
+  "author": "Regletto",
+  "homepage": "https://regletto.com/developers",
+  "repository": { "type": "git", "url": "git+https://github.com/Regletto/Addon-SDK.git" },
+  "bin": { "regletto": "bin/regletto.js" },
+  "types": "addon.d.ts",
+  "files": ["bin", "lib", "templates", "example", "addon.schema.json", "addon.d.ts", "writing.d.ts"],
+  "engines": { "node": ">=20.12" },
+  "scripts": {
+    "sync": "node scripts/sync.js",
+    "test": "node test/run.js"
+  }
+}

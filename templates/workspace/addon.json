@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/@regletto/addon-sdk/addon.schema.json",
+  "id": {{id}},
+  "title": {{title}},
+  "description": { "de": "Zeigt die Kapitel des offenen Buchs.", "en": "Shows the chapters of the open book." },
+  "version": "0.1.0",
+  "author": {{author}},
+  "engines": { "writing": ">=0.9.0" },
+  "icon": "widgets",
+  "needs": ["workspace", "writing:read"]
+}

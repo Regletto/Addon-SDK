@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "tree": [
+    {
+      "type": "chapter",
+      "id": "00000000-0000-4000-8000-000000000001",
+      "title": "Der Schnee",
+      "words": 48
+    },
+    {
+      "type": "chapter",
+      "id": "00000000-0000-4000-8000-000000000002",
+      "title": "Die Straße",
+      "words": 44
+    },
+    {
+      "type": "chapter",
+      "id": "00000000-0000-4000-8000-000000000003",
+      "title": "Sarnheim",
+      "words": 36
+    }
+  ]
+}
