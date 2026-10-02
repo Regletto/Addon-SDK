@@ -1,6 +1,6 @@
 {
 	"name": "@regletto/addon-sdk",
-	"version": "0.1.1",
+	"version": "1.0.0",
 	"description": "Create, check, build and test add-ons for Regletto Writing.",
 	"license": "MIT",
 	"author": "Regletto",
