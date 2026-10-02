@@ -1,6 +1,6 @@
 // The core of the add-on API: what every Regletto product calls the same, on
 // `window.addon`. What only one product has lies in the declarations of that
-// product's SDK, on `addon.<product>`, and they refer to this file. Together they
+// product's SDK (its surfaces and `addon.<product>`), and they refer to this file. Together they
 // are the reference on regletto.com/developers.
 
 /**
@@ -8,38 +8,6 @@
  * Regletto picks the author's language, then English, then the first one.
  */
 type AddonText = string | { [language: string]: string }
-
-/** An entry of the workspace's side column or a button in its head. */
-interface AddonFrameItem {
-	/** Comes back in `addon.onFrame()`. Same form as an id part of the manifest. */
-	id: string
-	/** 1 to 40 characters on one line, or one per language. */
-	label: AddonText
-	/** A name from Material Symbols Rounded. */
-	icon?: string
-}
-
-/** What stands in the frame around the workspace. A second call replaces the first whole. */
-interface AddonWorkspace {
-	/** 1 to 40 characters, or one per language. */
-	title: AddonText
-	/** At most 50 rows. `[]` gives the surface the whole width. */
-	sidebar: AddonFrameItem[]
-	/** At most 8 buttons in the head. */
-	buttons: AddonFrameItem[]
-}
-
-/** A dialog over the window. Regletto draws the frame, dialog.js the surface. */
-interface AddonDialog {
-	/** 1 to 40 characters, or one per language. */
-	title: AddonText
-	/** 1 to 80 characters beside the title, or one per language. */
-	note?: AddonText
-	/** 1 or 2 buttons at the foot. `addon.onButton()` in dialog.js hears them. */
-	buttons: { id: string; label: AddonText; primary?: boolean }[]
-	/** 360 to 960 by 240 to 720 points. */
-	size: { width: number; height: number }
-}
 
 /**
  * The fifteen values of the author's theme, and `mode`.
@@ -204,31 +172,6 @@ interface Addon {
 	settings(): Promise<{ [id: string]: any }>
 	/** The author changed a setting. The whole set comes along. */
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
-
-	/** Needs `workspace`; in addon.js only. Says what stands in the frame. A description that misses its form is refused whole. */
-	workspace(spec: AddonWorkspace): Promise<void>
-	/** In addon.js only. A row of the side column or a button of the head was pressed. */
-	onFrame(fn: (id: string) => void): () => void
-	/**
-	 * In addon.js and panel.js. Lays overlay.js over the whole window for at most 6 s.
-	 * `data` at most 4 KB as JSON, `say` 1 to 40 characters for screen readers.
-	 */
-	overlay<T>(data: T, options?: { say?: AddonText }): Promise<void>
-	/**
-	 * In addon.js and panel.js, only while the author presses something.
-	 * Answers what dialog.js hands `addon.close()`, `null` for the cross, Esc or a click beside it.
-	 */
-	dialog<T = unknown>(spec: AddonDialog): Promise<T | null>
-
-	/** In dialog.js only. A button of the frame was pressed. */
-	onButton(fn: (id: string) => void): () => void
-	/**
-	 * In dialog.js and overlay.js. Ends the dialog, and `value` is what `addon.dialog()` answers;
-	 * ends the overlay before its 6 s, which needs no value.
-	 */
-	close<T>(value?: T): Promise<void>
-	/** In overlay.js only. The `data` handed to `addon.overlay()`; cast it to the type you handed in. */
-	readonly overlayData: unknown
 }
 
 declare var addon: Addon
