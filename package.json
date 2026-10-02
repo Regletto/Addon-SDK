@@ -13,7 +13,6 @@
 	"types": "addon.d.ts",
 	"files": [
 		"lib",
-		"addon.schema.json",
 		"addon.d.ts"
 	],
 	"engines": {
