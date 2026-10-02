@@ -9,7 +9,7 @@
 			"\tbuttons: []",
 			"}).catch((error) => addon.log.error(error))",
 			"",
-			"addon.onPick((id) => {",
+			"addon.onFrame((id) => {",
 			"\t$0",
 			"})"
 		]

@@ -11,7 +11,7 @@ type AddonText = string | { [language: string]: string }
 
 /** An entry of the workspace's side column or a button in its head. */
 interface AddonFrameItem {
-	/** Comes back in `addon.onPick()`. Same form as an id part of the manifest. */
+	/** Comes back in `addon.onFrame()`. Same form as an id part of the manifest. */
 	id: string
 	/** 1 to 40 characters on one line, or one per language. */
 	label: AddonText
@@ -67,61 +67,65 @@ interface AddonTheme {
 /** A part from `addon.views`, text, or an array of them. */
 type AddonPart = Node | string | number | null | undefined | false | AddonPart[]
 
-/** The fields the default arrangement of a hull reads. */
-interface AddonFields {
+/** The fields the default arrangement of a hull reads. `Id` is the type of your ids. */
+interface AddonFields<Id extends string | number = string | number> {
 	/** Comes back in `onPick`; not drawn. */
-	id?: string | number
+	id?: Id
 	/** A picture at the ratio of a cover: a source or a node. */
-	face?: string | Node
+	cover?: string | Node
 	/** A name from Material Symbols Rounded, in a small box. */
-	mark?: string
+	icon?: string
 	name?: AddonPart
 	/** The second line, at most two lines high. */
-	say?: AddonPart
+	note?: AddonPart
 	/** A number in digits of equal width. */
-	tally?: AddonPart
+	count?: AddonPart
 	/** A band on the soft accent. */
-	ribbon?: AddonPart
+	badge?: AddonPart
 	/** How far something has come: a fraction, or a value of `gaugeOf`. */
 	gauge?: number
 	gaugeOf?: number
 	/** Drawn as selected. */
 	current?: boolean
 	/** A click, Enter or Space. */
-	onPick?: (id: any) => void
+	onPick?: (id: Id) => void
 }
 
 /** One row of a right-click menu. */
 interface AddonMenuRow {
 	id: string
-	label: string
+	/** One language, or one per language. */
+	label: AddonText
 	icon?: string
 	key?: string
 	on?: () => void
 	part?: string
 }
 
-/** A list or a grid. Built, never updated: call it again and replace the node. */
-interface AddonViewSpec {
-	items?: AddonFields[]
+/**
+ * A list or a grid. Built, never updated: call it again and replace the node.
+ * `Id` is the type of your ids, `Item` the shape of your items.
+ */
+interface AddonViewSpec<Id extends string | number = string | number, Item extends AddonFields<Id> = AddonFields<Id>> {
+	items?: Item[]
 	/** Compartments with a head, a chevron and a count, instead of `items`. */
-	sections?: { id: string; name: string; items: AddonFields[]; shut?: boolean }[]
+	sections?: { id: string; name: string; items: Item[]; shut?: boolean }[]
 	/** Which hull each item gets. */
 	item?: 'row' | 'card' | 'tile'
 	/** The id drawn as selected. */
-	current?: string | number | null
-	onPick?: (id: any) => void
+	current?: Id | null
+	onPick?: (id: Id) => void
 	/** Right click: the rows of the menu. */
-	onMenu?: (id: any, section?: string) => AddonMenuRow[]
+	onMenu?: (id: Id, section?: string) => AddonMenuRow[]
 	/** Dragged: the whole new order. */
-	onOrder?: (ids: any[], section?: string) => void
+	onOrder?: (ids: Id[], section?: string) => void
 	/** The dashed plus after the compartments. Needs `newSection`, the word on the button. */
 	onNewSection?: (name: string) => void
 	newSection?: string
 	/** Your own element per item: the list sets its behaviour on that node. */
-	row?: (item: any) => Node
-	card?: (item: any) => Node
-	tile?: (item: any) => Node
+	row?: (item: Item) => Node
+	card?: (item: Item) => Node
+	tile?: (item: Item) => Node
 }
 
 /**
@@ -135,18 +139,18 @@ interface AddonViews {
 	card(fields: AddonFields, parts?: AddonPart[]): HTMLElement
 	/** 148 px, with a 134 px picture. */
 	tile(fields: AddonFields, parts?: AddonPart[]): HTMLElement
-	face(source?: string | Node, small?: boolean): HTMLElement
-	mark(icon: string, small?: boolean): HTMLElement
+	cover(source?: string | Node, small?: boolean): HTMLElement
+	icon(symbol: string, small?: boolean): HTMLElement
 	name(value: AddonPart): HTMLElement
-	say(value: AddonPart): HTMLElement
-	tally(value: AddonPart): HTMLElement
-	ribbon(value: AddonPart): HTMLElement
+	note(value: AddonPart): HTMLElement
+	count(value: AddonPart): HTMLElement
+	badge(value: AddonPart): HTMLElement
 	/** `gauge(3, 10)` and `gauge(0.3)` draw the same. */
 	gauge(value: number, of?: number): HTMLElement
 	/** Pairs of a word and its value, in two columns. */
 	fields(pairs: [AddonPart, AddonPart][]): HTMLElement
 	/** A dot of the given colour. */
-	pip(colour?: string): HTMLElement
+	dot(colour?: string): HTMLElement
 	/** Side by side. */
 	line(...parts: AddonPart[]): HTMLElement
 	/** One under the other. */
@@ -157,8 +161,21 @@ interface AddonViews {
 	rename(node: Node, done: (name: string) => void): void
 	/** A tip after 400 ms, at the right edge. */
 	tip(node: Node, text: string): void
-	list(spec: AddonViewSpec): HTMLElement
-	grid(spec: AddonViewSpec): HTMLElement
+	list<Id extends string | number = string | number, Item extends AddonFields<Id> = AddonFields<Id>>(spec: AddonViewSpec<Id, Item>): HTMLElement
+	grid<Id extends string | number = string | number, Item extends AddonFields<Id> = AddonFields<Id>>(spec: AddonViewSpec<Id, Item>): HTMLElement
+
+	/** @deprecated Goes in 2.0.0. Use `cover`. */
+	face(source?: string | Node, small?: boolean): HTMLElement
+	/** @deprecated Goes in 2.0.0. Use `icon`. */
+	mark(symbol: string, small?: boolean): HTMLElement
+	/** @deprecated Goes in 2.0.0. Use `note`. */
+	say(value: AddonPart): HTMLElement
+	/** @deprecated Goes in 2.0.0. Use `count`. */
+	tally(value: AddonPart): HTMLElement
+	/** @deprecated Goes in 2.0.0. Use `badge`. */
+	ribbon(value: AddonPart): HTMLElement
+	/** @deprecated Goes in 2.0.0. Use `dot`. */
+	pip(colour?: string): HTMLElement
 }
 
 /**
@@ -175,20 +192,23 @@ interface AddonLog {
 /** The add-on's own note. Needs no permission. At most 1 MB. */
 interface AddonStore {
 	/** `null` where nothing was written yet. */
-	read(): Promise<any>
-	write(data: any): Promise<void>
+	read<T = unknown>(): Promise<T | null>
+	write<T>(data: T): Promise<void>
 }
 
 /** `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data. */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
 	readonly lang: string
-	/** The author changed the language. Regletto translates the frame itself; redraw what you drew. */
-	onLang(fn: (lang: string) => void): void
+	/**
+	 * The author changed the language. Regletto translates the frame itself; redraw what you drew.
+	 * Every `on…` answers a function that stops listening.
+	 */
+	onLang(fn: (lang: string) => void): () => void
 	/** The author's theme. Does not change; `onTheme()` says when it did. `null` if the program could not read its palettes. */
 	readonly theme: AddonTheme | null
 	/** The theme changed. The CSS properties on `:root` are already new when this runs. */
-	onTheme(fn: (theme: AddonTheme) => void): void
+	onTheme(fn: (theme: AddonTheme) => void): () => void
 	readonly log: AddonLog
 	readonly views: AddonViews
 	/** The note that travels with the project: `<project>/addons/<id>.json`. */
@@ -196,30 +216,35 @@ interface Addon {
 	/** The values of `settings` in addon.json, `{ <id>: value }`. A row nobody touched answers its `default`. Read, never set. */
 	settings(): Promise<{ [id: string]: any }>
 	/** The author changed a setting. The whole set comes along. */
-	onSettings(fn: (values: { [id: string]: any }) => void): void
+	onSettings(fn: (values: { [id: string]: any }) => void): () => void
 
 	/** Needs `workspace`; in addon.js only. Says what stands in the frame. A description that misses its form is refused whole. */
 	workspace(spec: AddonWorkspace): Promise<void>
 	/** In addon.js only. A row of the side column or a button of the head was pressed. */
-	onPick(fn: (id: string) => void): void
+	onFrame(fn: (id: string) => void): () => void
+	/** @deprecated Goes in 2.0.0. Use `onFrame`. */
+	onPick(fn: (id: string) => void): () => void
 	/**
 	 * In addon.js and panel.js. Lays overlay.js over the whole window for at most 6 s.
 	 * `data` at most 4 KB as JSON, `say` 1 to 40 characters for screen readers.
 	 */
-	overlay(data: any, options?: { say?: AddonText }): Promise<void>
+	overlay<T>(data: T, options?: { say?: AddonText }): Promise<void>
 	/**
 	 * In addon.js and panel.js, only while the author presses something.
 	 * Answers what dialog.js hands `addon.close()`, `null` for the cross, Esc or a click beside it.
 	 */
-	dialog(spec: AddonDialog): Promise<any>
+	dialog<T = unknown>(spec: AddonDialog): Promise<T | null>
 
 	/** In dialog.js only. A button of the frame was pressed. */
-	onButton(fn: (id: string) => void): void
-	/** In dialog.js only. Ends the dialog; `value` is what `addon.dialog()` answers. */
-	close(value: any): Promise<void>
-	/** In overlay.js only. The `data` handed to `addon.overlay()`. */
-	readonly overlayData: any
-	/** In overlay.js only. Ends the overlay before its 6 s. */
+	onButton(fn: (id: string) => void): () => void
+	/**
+	 * In dialog.js and overlay.js. Ends the dialog, and `value` is what `addon.dialog()` answers;
+	 * ends the overlay before its 6 s, which needs no value.
+	 */
+	close<T>(value?: T): Promise<void>
+	/** In overlay.js only. The `data` handed to `addon.overlay()`; cast it to the type you handed in. */
+	readonly overlayData: unknown
+	/** @deprecated Goes in 2.0.0. Use `close`. */
 	done(): Promise<void>
 }
 
