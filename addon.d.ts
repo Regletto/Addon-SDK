@@ -163,19 +163,6 @@ interface AddonViews {
 	tip(node: Node, text: string): void
 	list<Id extends string | number = string | number, Item extends AddonFields<Id> = AddonFields<Id>>(spec: AddonViewSpec<Id, Item>): HTMLElement
 	grid<Id extends string | number = string | number, Item extends AddonFields<Id> = AddonFields<Id>>(spec: AddonViewSpec<Id, Item>): HTMLElement
-
-	/** @deprecated Goes in 2.0.0. Use `cover`. */
-	face(source?: string | Node, small?: boolean): HTMLElement
-	/** @deprecated Goes in 2.0.0. Use `icon`. */
-	mark(symbol: string, small?: boolean): HTMLElement
-	/** @deprecated Goes in 2.0.0. Use `note`. */
-	say(value: AddonPart): HTMLElement
-	/** @deprecated Goes in 2.0.0. Use `count`. */
-	tally(value: AddonPart): HTMLElement
-	/** @deprecated Goes in 2.0.0. Use `badge`. */
-	ribbon(value: AddonPart): HTMLElement
-	/** @deprecated Goes in 2.0.0. Use `dot`. */
-	pip(colour?: string): HTMLElement
 }
 
 /**
@@ -222,8 +209,6 @@ interface Addon {
 	workspace(spec: AddonWorkspace): Promise<void>
 	/** In addon.js only. A row of the side column or a button of the head was pressed. */
 	onFrame(fn: (id: string) => void): () => void
-	/** @deprecated Goes in 2.0.0. Use `onFrame`. */
-	onPick(fn: (id: string) => void): () => void
 	/**
 	 * In addon.js and panel.js. Lays overlay.js over the whole window for at most 6 s.
 	 * `data` at most 4 KB as JSON, `say` 1 to 40 characters for screen readers.
@@ -244,8 +229,6 @@ interface Addon {
 	close<T>(value?: T): Promise<void>
 	/** In overlay.js only. The `data` handed to `addon.overlay()`; cast it to the type you handed in. */
 	readonly overlayData: unknown
-	/** @deprecated Goes in 2.0.0. Use `close`. */
-	done(): Promise<void>
 }
 
 declare var addon: Addon
