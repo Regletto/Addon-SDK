@@ -11,21 +11,21 @@ document.body.style.padding = '12px'
 const chaptersOf = (tree) => tree.flatMap((node) => (node.type === 'section' ? chaptersOf(node.items ?? []) : [node]))
 
 async function draw () {
-  let words = null
-  try {
-    const { tree } = await addon.writing.tree()
-    words = chaptersOf(tree).reduce((sum, chapter) => sum + (chapter.words ?? 0), 0)
-  } catch (error) {
-    // Without an open book, tree() refuses: a refusal is a thrown error, never empty data.
-    addon.log.info(error)
-  }
-  document.body.replaceChildren(addon.views.line(
-    addon.views.mark('view_sidebar'),
-    addon.views.stack(
-      addon.views.name(words === null ? say('Kein Buch offen', 'No book open') : words.toLocaleString(addon.lang)),
-      addon.views.say(say('Wörter im Buch', 'words in the book'))
-    )
-  ))
+	let words = null
+	try {
+		const { tree } = await addon.writing.tree()
+		words = chaptersOf(tree).reduce((sum, chapter) => sum + (chapter.words ?? 0), 0)
+	} catch (error) {
+		// Without an open book, tree() refuses: a refusal is a thrown error, never empty data.
+		addon.log.info(error)
+	}
+	document.body.replaceChildren(addon.views.line(
+		addon.views.mark('view_sidebar'),
+		addon.views.stack(
+			addon.views.name(words === null ? say('Kein Buch offen', 'No book open') : words.toLocaleString(addon.lang)),
+			addon.views.say(say('Wörter im Buch', 'words in the book'))
+		)
+	))
 }
 
 addon.writing.onBook(draw)

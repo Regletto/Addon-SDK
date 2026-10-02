@@ -1,16 +1,16 @@
 {
-  "$schema": "./node_modules/@regletto/addon-sdk/addon.schema.json",
-  "id": {{id}},
-  "title": {{title}},
-  "description": { "de": "Öffnet aus der Nebenspalte einen Dialog und merkt sich, was darin gewählt wurde.", "en": "Opens a dialog from the side column and keeps what was chosen in it." },
-  "version": "0.1.0",
-  "author": {{author}},
-  "engines": { "writing": ">=0.9.0" },
-  "icon": "open_in_new",
-  "needs": [],
-  "panel": {
-    "icon": "open_in_new",
-    "label": {{title}},
-    "about": { "de": "Öffnet einen Dialog.", "en": "Opens a dialog." }
-  }
+	"$schema": "./node_modules/@regletto/addon-sdk/addon.schema.json",
+	"id": {{id}},
+	"title": {{title}},
+	"description": { "de": "Öffnet aus der Nebenspalte einen Dialog und merkt sich, was darin gewählt wurde.", "en": "Opens a dialog from the side column and keeps what was chosen in it." },
+	"version": "0.1.0",
+	"author": {{author}},
+	"engines": { "writing": ">=0.9.0" },
+	"icon": "open_in_new",
+	"needs": [],
+	"panel": {
+		"icon": "open_in_new",
+		"label": {{title}},
+		"about": { "de": "Öffnet einen Dialog.", "en": "Opens a dialog." }
+	}
 }

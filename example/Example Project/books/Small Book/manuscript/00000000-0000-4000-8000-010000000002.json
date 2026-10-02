@@ -1,0 +1,27 @@
+{
+	"format": 15,
+	"notes": [],
+	"blocks": [
+		{
+			"runs": [
+				{
+					"t": "Tom searched for the map for a long time at the well, without success. Alice did not answer. Jack asked again, more quietly this time. Whoever found the sack of salt, said Robert, was to tell Alice. Down at the mill, it was said, Alice had last seen the book."
+				}
+			]
+		},
+		{
+			"runs": [
+				{
+					"t": "For a while nobody said anything, and that was worse than any word. In Saltmere, it was said, Robert had last seen the key. The night was cold, but the stars stood clear above the roofs. It smelled of wet wood, of salt and of old paper. Whoever found the rope, said Jack, was to tell Mary. The night was cold, but the stars stood clear above the roofs."
+				}
+			]
+		},
+		{
+			"runs": [
+				{
+					"t": "At the well, it was said, Robert had last seen the letter. The next day Emma set off with the book under one arm, without saying goodbye. “You should have come sooner,” said Tom. “Nobody asked us,” Jack replied. It was a clear evening, and in the stable nothing stirred."
+				}
+			]
+		}
+	]
+}

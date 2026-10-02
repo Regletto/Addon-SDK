@@ -1,13 +1,13 @@
 {
-  "name": {{name}},
-  "private": true,
-  "scripts": {
-    "check": "regletto check",
-    "build": "regletto build",
-    "dev": "regletto dev",
-    "logs": "regletto logs"
-  },
-  "devDependencies": {
-    "@regletto/addon-sdk": {{sdk}}
-  }
+	"name": {{name}},
+	"private": true,
+	"scripts": {
+		"check": "regletto check",
+		"build": "regletto build",
+		"dev": "regletto dev",
+		"logs": "regletto logs"
+	},
+	"devDependencies": {
+		"@regletto/addon-sdk": {{sdk}}
+	}
 }

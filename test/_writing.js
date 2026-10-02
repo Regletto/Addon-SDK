@@ -7,9 +7,9 @@ const path = require('node:path')
 const WRITING = path.join(__dirname, '..', '..', '..', 'Writing', 'Program')
 
 module.exports = function writing () {
-  if (!fs.existsSync(path.join(WRITING, 'src', 'manifest.js'))) {
-    console.log(`SKIPPED: no Regletto Writing checkout at ${WRITING}`)
-    process.exit(2)
-  }
-  return WRITING
+	if (!fs.existsSync(path.join(WRITING, 'src', 'manifest.js'))) {
+		console.log(`SKIPPED: no Regletto Writing checkout at ${WRITING}`)
+		process.exit(2)
+	}
+	return WRITING
 }

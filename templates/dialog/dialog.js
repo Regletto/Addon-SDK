@@ -6,21 +6,21 @@
 document.body.style.padding = '18px 22px'
 
 const CHOICES = [
-  { id: 'morning', de: 'Morgens', en: 'In the morning' },
-  { id: 'evening', de: 'Abends', en: 'In the evening' }
+	{ id: 'morning', de: 'Morgens', en: 'In the morning' },
+	{ id: 'evening', de: 'Abends', en: 'In the evening' }
 ]
 let picked = CHOICES[0].id
 
 const drawChoices = () => document.body.replaceChildren(addon.views.list({
-  items: CHOICES.map((one) => ({ id: one.id, mark: 'schedule', name: addon.lang === 'de' ? one.de : one.en })),
-  item: 'row',
-  current: picked,
-  onPick: (id) => { picked = id; drawChoices() }
+	items: CHOICES.map((one) => ({ id: one.id, mark: 'schedule', name: addon.lang === 'de' ? one.de : one.en })),
+	item: 'row',
+	current: picked,
+	onPick: (id) => { picked = id; drawChoices() }
 }))
 
 addon.onButton((id) => {
-  if (id === 'apply') addon.close({ picked })
-  if (id === 'cancel') addon.close(null)
+	if (id === 'apply') addon.close({ picked })
+	if (id === 'cancel') addon.close(null)
 })
 
 drawChoices()

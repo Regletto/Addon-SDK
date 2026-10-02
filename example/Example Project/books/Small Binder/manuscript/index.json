@@ -1,0 +1,23 @@
+{
+	"format": 1,
+	"tree": [
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-040000000001",
+			"title": "The Letter at the Harbour",
+			"words": 135
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-040000000002",
+			"title": "The Crate by the Lighthouse",
+			"words": 110
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-040000000003",
+			"title": "The Rope in the Rain",
+			"words": 115
+		}
+	]
+}

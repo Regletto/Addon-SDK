@@ -1,0 +1,53 @@
+{
+	"format": 1,
+	"tree": [
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000001",
+			"title": "The Letter at the Harbour",
+			"words": 1515
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000002",
+			"title": "The Crate by the Lighthouse",
+			"words": 1504
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000003",
+			"title": "The Rope in the Rain",
+			"words": 1519
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000004",
+			"title": "The Lantern on the Pass",
+			"words": 1544
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000005",
+			"title": "The Key at the Well",
+			"words": 1507
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000006",
+			"title": "The Book in the Stable",
+			"words": 1510
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000007",
+			"title": "The Coat behind the Wall",
+			"words": 1554
+		},
+		{
+			"type": "chapter",
+			"id": "00000000-0000-4000-8000-020000000008",
+			"title": "The Map at Night",
+			"words": 1511
+		}
+	]
+}
