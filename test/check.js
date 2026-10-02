@@ -97,6 +97,13 @@ try {
 	for (const left of ['node_modules/x', 'dist', '.git']) fs.mkdirSync(path.join(dir, left), { recursive: true })
 	fs.writeFileSync(path.join(dir, 'node_modules', 'x', 'index.js'), '')
 
+	// What .gitattributes marks export-ignore is left out, a file or a folder.
+	fs.mkdirSync(path.join(dir, 'drafts'))
+	fs.writeFileSync(path.join(dir, 'drafts', 'a.md'), 'x')
+	fs.writeFileSync(path.join(dir, 'notes.md'), 'x')
+	fs.writeFileSync(path.join(dir, '.gitattributes'), '# comment\nnotes.md export-ignore\ndrafts/ export-ignore\r\n')
+	assert.ok(!check(dir).files.some((file) => file.name === 'notes.md' || file.name.startsWith('drafts/')), 'export-ignore leaves files out')
+
 	const made = build(dir)
 	assert.deepStrictEqual(made.problems, [])
 	assert.strictEqual(path.basename(made.out), 'regletto.probe-1.0.0.zip')
