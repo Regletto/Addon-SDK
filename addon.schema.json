@@ -2,13 +2,13 @@
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id": "https://regletto.com/developers/addon.schema.json",
 	"title": "addon.json",
-	"description": "The manifest of an add-on for Regletto Writing. Help for the editor only: regletto check decides. https://regletto.com/developers",
+	"description": "The core of addon.json, what every Regletto product reads the same. Each product SDK ships the whole schema of its product, made from this one. https://regletto.com/developers",
 	"type": "object",
 	"required": ["id", "title", "description", "version", "author", "engines", "icon", "needs"],
 	"additionalProperties": false,
 	"properties": {
 		"$schema": {
-			"description": "Where your editor finds this schema. Regletto Writing ignores the field."
+			"description": "Where your editor finds this schema. The product ignores the field."
 		},
 		"id": {
 			"description": "<publisher>.<name>, for example regletto.schreibziel. Both parts are 2 to 64 of a to z, 0 to 9 and -, the whole at most 64 characters. Never shown, it names the folder.",
@@ -33,19 +33,11 @@
 			"$ref": "#/$defs/one60"
 		},
 		"engines": {
-			"description": "From which version of each product it runs: { \"writing\": \">=0.9.0\" }.",
+			"description": "From which version of each product it runs: { \"<product>\": \">=1.0.0\" }.",
 			"type": "object",
-			"required": ["writing"],
 			"minProperties": 1,
 			"propertyNames": { "pattern": "^[a-z][a-z0-9-]{1,19}$" },
-			"additionalProperties": { "type": "string", "pattern": "^>=\\d+\\.\\d+\\.\\d+$" },
-			"properties": {
-				"writing": {
-					"description": "The oldest Regletto Writing this add-on runs in, as >=x.y.z.",
-					"type": "string",
-					"pattern": "^>=\\d+\\.\\d+\\.\\d+$"
-				}
-			}
+			"additionalProperties": { "type": "string", "pattern": "^>=\\d+\\.\\d+\\.\\d+$" }
 		},
 		"icon": {
 			"description": "A name from Material Symbols Rounded, for example flag.",
@@ -56,41 +48,18 @@
 			"description": "What the add-on may do. store, settings, log, theme and lang need nothing.",
 			"type": "array",
 			"items": {
-				"enum": ["workspace", "writing:read", "writing:suggest"],
+				"enum": ["workspace"],
 				"markdownEnumDescriptions": [
-					"A workspace behind its own icon in the rail. Needs addon.js.",
-					"Read the chapter tree, a chapter, the selection and mentions.",
-					"Lay a suggestion into the text. Only the author puts it in."
+					"A workspace behind its own icon in the rail. Needs addon.js."
 				]
 			}
 		},
 		"settings": {
-			"description": "What the author can set, at most 40 rows. Regletto Writing draws them; the add-on reads them with addon.settings().",
+			"description": "What the author can set, at most 40 rows. The product draws them; the add-on reads them with addon.settings().",
 			"type": "array",
 			"minItems": 1,
 			"maxItems": 40,
 			"items": { "$ref": "#/$defs/row" }
-		},
-		"panel": {
-			"description": "A panel in the side column of the manuscript. Needs panel.js.",
-			"type": "object",
-			"required": ["icon", "label", "about"],
-			"additionalProperties": false,
-			"properties": {
-				"icon": {
-					"description": "A name from Material Symbols Rounded, the sign in the rail.",
-					"type": "string",
-					"pattern": "^[a-z0-9_]{1,40}$"
-				},
-				"label": {
-					"description": "The name of the panel, 1 to 40 characters, or one per language.",
-					"$ref": "#/$defs/line40"
-				},
-				"about": {
-					"description": "One line under the list of panels, 1 to 200 characters, or one per language.",
-					"$ref": "#/$defs/line200"
-				}
-			}
 		}
 	},
 	"$defs": {

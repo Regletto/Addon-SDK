@@ -1,9 +1,9 @@
 # Regletto Add-ons
 
-For add-ons for Regletto Writing, with [@regletto/addon-sdk](https://www.npmjs.com/package/@regletto/addon-sdk) in the project:
+For Regletto add-ons, with the SDK of your product in the project, for Regletto Writing [@regletto/writing-addon-sdk](https://www.npmjs.com/package/@regletto/writing-addon-sdk):
 
 * snippets for `workspace`, `settings`, `dialog` and `addon.writing.suggest`
-* **Regletto: Build** and **Regletto: Load in Writing**
+* **Regletto: Build** and **Regletto: Load for testing**
 * what `regletto check` finds, as problems at the file and the field
 * **Regletto: Show log**, the add-on's log in the Output panel
 

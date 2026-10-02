@@ -1,6 +1,7 @@
 // regletto dev: the junction is laid and taken away, and the project behind it
 // stands untouched either way. A folder that is not our link is never touched.
-// Runs against a data folder of its own (--data), never against Writing's.
+// Runs against a data folder of its own (--data), never against a product's,
+// with the sample product (test/sample).
 // Also regletto logs: which lines it prints, and from where.
 
 const assert = require('node:assert')
@@ -10,8 +11,9 @@ const path = require('node:path')
 const { spawnSync } = require('node:child_process')
 const { link, unlink } = require('../lib/dev.js')
 const { linesAfter, levelOf } = require('../lib/logs.js')
+const product = require('./sample/product.js')
 
-const BIN = path.join(__dirname, '..', 'bin', 'regletto.js')
+const BIN = path.join(__dirname, 'sample', 'bin.js')
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'regletto-dev-'))
 const project = path.join(root, 'project')
 const data = path.join(root, 'data')
@@ -36,20 +38,20 @@ try {
 	assert.strictEqual(laid.status, 0, laid.stdout + laid.stderr)
 	assert.ok(fs.lstatSync(at).isSymbolicLink(), 'a junction stands under the id')
 	assert.strictEqual(fs.readFileSync(path.join(at, 'lib', 'x.js'), 'utf8'), '// x', 'and leads into the project')
-	assert.ok(link(project, data).already, 'a second dev finds it laid')
+	assert.ok(link(project, data, product).already, 'a second dev finds it laid')
 
 	// Taken away again, and the project is as it was.
 	const taken = regletto('dev', '--stop', '--data', data)
 	assert.strictEqual(taken.status, 0, taken.stdout + taken.stderr)
 	assert.ok(!fs.existsSync(at), 'the junction is gone')
 	assert.deepStrictEqual(snapshot(), before, 'the project stands untouched')
-	assert.strictEqual(unlink(project, data).gone, false, 'a second --stop has nothing to take')
+	assert.strictEqual(unlink(project, data, product).gone, false, 'a second --stop has nothing to take')
 
 	// An installed add-on of the same id is a folder, and it is left alone both ways.
 	fs.mkdirSync(at, { recursive: true })
 	fs.writeFileSync(path.join(at, 'addon.json'), '{}')
-	assert.match(link(project, data).error, /installed add-on/)
-	assert.match(unlink(project, data).error, /stays/)
+	assert.match(link(project, data, product).error, /installed add-on/)
+	assert.match(unlink(project, data, product).error, /stays/)
 	assert.strictEqual(fs.readFileSync(path.join(at, 'addon.json'), 'utf8'), '{}', 'the installed one is untouched')
 
 	// A link to another folder is not ours to take.
@@ -57,13 +59,13 @@ try {
 	const other = path.join(root, 'other')
 	fs.mkdirSync(other)
 	fs.symlinkSync(other, at, 'junction')
-	assert.match(link(project, data).error, /already links/)
-	assert.match(unlink(project, data).error, /stays/)
+	assert.match(link(project, data, product).error, /already links/)
+	assert.match(unlink(project, data, product).error, /stays/)
 	assert.ok(fs.existsSync(other) && fs.lstatSync(at).isSymbolicLink(), 'both stand')
 
 	// An id Windows cannot make a folder of is never linked.
 	fs.writeFileSync(path.join(project, 'addon.json'), JSON.stringify({ id: 'nul.sample' }))
-	assert.match(link(project, data).error, /no usable "id"/, 'a device name never becomes a folder')
+	assert.match(link(project, data, product).error, /no usable "id"/, 'a device name never becomes a folder')
 } finally {
 	fs.rmSync(root, { recursive: true, force: true })
 }

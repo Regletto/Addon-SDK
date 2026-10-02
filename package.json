@@ -1,7 +1,7 @@
 {
 	"name": "@regletto/addon-sdk",
-	"version": "1.0.0",
-	"description": "Create, check, build and test add-ons for Regletto Writing.",
+	"version": "1.0.1",
+	"description": "The base of the SDKs for Regletto add-ons: the commands, the core of the API and of addon.json. Install the SDK of your product.",
 	"license": "MIT",
 	"author": "Regletto",
 	"homepage": "https://regletto.com/developers",
@@ -9,18 +9,12 @@
 		"type": "git",
 		"url": "git+https://github.com/Regletto/Addon-SDK.git"
 	},
-	"bin": {
-		"regletto": "bin/regletto.js"
-	},
+	"main": "lib/cli.js",
 	"types": "addon.d.ts",
 	"files": [
-		"bin",
 		"lib",
-		"templates",
-		"example",
 		"addon.schema.json",
-		"addon.d.ts",
-		"writing.d.ts"
+		"addon.d.ts"
 	],
 	"engines": {
 		"node": ">=20.12"
