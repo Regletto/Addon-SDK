@@ -1,8 +1,9 @@
-// The VS Code extension for add-ons of Regletto Writing.
+// The VS Code extension for Regletto add-ons, in every product.
 //
-// It checks nothing itself. Every command runs the SDK that the project has in
-// node_modules, and the problems shown are what `regletto check --json` says. So
-// the version of the SDK in the project decides, never one bundled here.
+// It checks nothing itself. Every command runs the product SDK that the project
+// has in node_modules, and the problems shown are what `regletto check --json`
+// says. So the SDK in the project decides, product and version, never one
+// bundled here.
 
 const vscode = require('vscode')
 const fs = require('node:fs')
@@ -22,11 +23,23 @@ function addonFolder () {
 	return found?.uri.fsPath ?? null
 }
 
-// The command line tool of the SDK in this project, or null (with a hint).
+// The command line tool of the product SDK in this project, or null (with a
+// hint). A product SDK is the package of @regletto that carries bin/regletto.js;
+// the base, @regletto/addon-sdk, has none. The one the project names in its
+// package.json wins, so a project never runs the SDK of another product.
 function sdkOf (dir) {
-	const bin = path.join(dir, 'node_modules', '@regletto', 'addon-sdk', 'bin', 'regletto.js')
-	if (fs.existsSync(bin)) return bin
-	vscode.window.showWarningMessage('@regletto/addon-sdk is not installed in this project. Run npm install.')
+	let named = {}
+	try {
+		const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'))
+		named = { ...pkg.dependencies, ...pkg.devDependencies }
+	} catch {
+		// No package.json: nothing is named, and nothing is found below either.
+	}
+	for (const name of Object.keys(named).filter((name) => name.startsWith('@regletto/'))) {
+		const bin = path.join(dir, 'node_modules', ...name.split('/'), 'bin', 'regletto.js')
+		if (fs.existsSync(bin)) return bin
+	}
+	vscode.window.showWarningMessage('This project has no Regletto SDK installed, such as @regletto/writing-addon-sdk. Run npm install.')
 	return null
 }
 
@@ -127,4 +140,5 @@ function deactivate () {
 	logChannel?.dispose()
 }
 
-module.exports = { activate, deactivate }
+// sdkOf is exported for test/vscode.js.
+module.exports = { activate, deactivate, sdkOf }

@@ -1,6 +1,7 @@
 // The core of the add-on API: what every Regletto product calls the same, on
-// `window.addon`. What only Regletto Writing has is in writing.d.ts, on
-// `addon.writing`. These two files are the reference on regletto.com/developers.
+// `window.addon`. What only one product has lies in the declarations of that
+// product's SDK, on `addon.<product>`, and they refer to this file. Together they
+// are the reference on regletto.com/developers.
 
 /**
  * A string in one language, or one per language: `{ de: 'Figuren', en: 'Characters' }`.

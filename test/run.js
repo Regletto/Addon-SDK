@@ -3,7 +3,7 @@
 //   node test/run.js            all
 //   node test/run.js check new  check.js and new.js
 //
-// A check that exits 2 had no Regletto Writing checkout beside this repository
+// A check that exits 2 had no Regletto Writing checkout above this repository
 // and is counted as skipped, not as green.
 
 const fs = require('node:fs')

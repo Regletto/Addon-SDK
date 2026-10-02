@@ -1,7 +1,7 @@
 {
 	"name": "regletto-addons",
 	"displayName": "Regletto Add-ons",
-	"description": "Snippets, build, test in Regletto Writing, problems and the log for add-ons. Uses @regletto/addon-sdk.",
+	"description": "Snippets, build, test in the product, problems and the log for Regletto add-ons. Uses the SDK of the product in your project.",
 	"version": "0.1.0",
 	"publisher": "regletto",
 	"license": "MIT",
@@ -19,7 +19,7 @@
 	"contributes": {
 		"commands": [
 			{ "command": "regletto.build", "title": "Build", "category": "Regletto" },
-			{ "command": "regletto.dev", "title": "Load in Writing", "category": "Regletto" },
+			{ "command": "regletto.dev", "title": "Load for testing", "category": "Regletto" },
 			{ "command": "regletto.logs", "title": "Show log", "category": "Regletto" }
 		],
 		"snippets": [

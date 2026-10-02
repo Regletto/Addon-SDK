@@ -1,15 +1,25 @@
-// Where the Regletto Writing checkout lies beside this repository, or an exit 2
-// (skipped) when it does not: the checks that hold the SDK to Writing need it.
+// Where the Regletto Writing checkout lies, or an exit 2 (skipped) when there is
+// none: the checks that hold the base to the first product need it. It is
+// Writing/Program beside Platform, found from here up, so a worktree finds it too.
 
 const fs = require('node:fs')
 const path = require('node:path')
 
-const WRITING = path.join(__dirname, '..', '..', '..', 'Writing', 'Program')
+// The checkout, or null.
+function find () {
+	for (let dir = __dirname; dir !== path.dirname(dir); dir = path.dirname(dir)) {
+		const there = path.join(dir, 'Writing', 'Program')
+		if (fs.existsSync(path.join(there, 'src', 'manifest.js'))) return there
+	}
+	return null
+}
 
 module.exports = function writing () {
-	if (!fs.existsSync(path.join(WRITING, 'src', 'manifest.js'))) {
-		console.log(`SKIPPED: no Regletto Writing checkout at ${WRITING}`)
+	const found = find()
+	if (!found) {
+		console.log('SKIPPED: no Regletto Writing checkout above this repository')
 		process.exit(2)
 	}
-	return WRITING
+	return found
 }
+module.exports.find = find
