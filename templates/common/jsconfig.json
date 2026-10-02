@@ -2,7 +2,8 @@
 	"compilerOptions": {
 		"target": "es2022",
 		"lib": ["es2022", "dom"],
-		"checkJs": true
+		"checkJs": true,
+		"strict": false
 	},
 	"include": [
 		"*.js",
