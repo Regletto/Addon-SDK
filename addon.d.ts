@@ -178,6 +178,25 @@ interface AddonKeys {
 	add(shortcut: AddonShortcut): Promise<void>
 }
 
+/**
+ * A line in the corner of the window, drawn by Regletto in its own shape with your add-on's name before the sentence.
+ * A `'done'` line without a button goes by itself after 3 s and 2 s of fading; a failure and a line with a button
+ * stay until the author clicks.
+ */
+interface AddonNotice {
+	/** One sentence on one line: 1 to 80 characters, or one per language. */
+	text: AddonText
+	/** `'done'` (the default), with a tick where it goes by itself, or `'failed'`, with an exclamation mark. */
+	kind?: 'done' | 'failed'
+	/** One button behind the sentence. */
+	action?: {
+		/** 1 to 40 characters, or one per language. */
+		label: AddonText
+		/** Called where `notify()` was called. The press counts as the author pressing. */
+		run: () => unknown
+	}
+}
+
 /** `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data. */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
@@ -205,6 +224,13 @@ interface Addon {
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
 	/** In addon.js and panel.js; editor.js has the same as `host.keys`. Not in dialog.js or overlay.js. */
 	readonly keys: AddonKeys
+	/**
+	 * Shows a line in the corner of the window. In addon.js and panel.js; editor.js has the same as `host.notify`.
+	 * Not in dialog.js or overlay.js. Your next line replaces it, and it goes when the add-on is switched off.
+	 * A strip of Regletto's that waits for the author is not displaced: then nothing shows, and the log says so.
+	 * Refuses a line that misses its form.
+	 */
+	notify(notice: AddonNotice): Promise<void>
 }
 
 declare var addon: Addon
