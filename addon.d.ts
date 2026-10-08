@@ -151,6 +151,28 @@ interface AddonStore {
 	write<T>(data: T): Promise<void>
 }
 
+/** A shortcut the author presses anywhere in the window, and may lay on another key in the settings. */
+interface AddonShortcut {
+	/** Your name for it: a-z, 0-9 and "-", 2 to 64 characters. The same id again replaces your shortcut. */
+	id: string
+	/**
+	 * The default key, written the way Regletto writes it: `Ctrl`, `Alt`, `Shift` in this order and one key,
+	 * `'Ctrl+Shift+M'`. It needs `Ctrl` or `Alt`, or is an F-key alone. `''` is none, and the author may give one.
+	 * A key that is taken stays with the one who had it: yours stands without one, and the log says so.
+	 */
+	key: string
+	/** The name the settings list it under: 1 to 40 characters, or one per language. */
+	label: AddonText
+	/** Called on the press, where the shortcut was laid. The press counts as the author pressing. */
+	run: () => unknown
+}
+
+/** Shortcuts. Every one of them goes when the add-on is switched off. */
+interface AddonKeys {
+	/** Lays a shortcut, at most 20 per add-on. Refuses one that misses its form. */
+	add(shortcut: AddonShortcut): Promise<void>
+}
+
 /** `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data. */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
@@ -172,6 +194,7 @@ interface Addon {
 	settings(): Promise<{ [id: string]: any }>
 	/** The author changed a setting. The whole set comes along. */
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
+	readonly keys: AddonKeys
 }
 
 declare var addon: Addon
