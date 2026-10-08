@@ -178,6 +178,46 @@ interface AddonFiles {
 	remove(path: string): Promise<boolean>
 }
 
+/** What a call to the internet carries besides its address. Any other field is refused. */
+interface AddonFetchOptions {
+	/** `'GET'` when left out. The answer to a `'HEAD'` has an empty body, whatever its `content-length` says. */
+	method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+	/**
+	 * Names and values as strings. `authorization` stays behind when a redirect leaves the origin.
+	 * `connection`, `content-length`, `expect`, `keep-alive`, `transfer-encoding` and `upgrade` are refused: the connection is Regletto's.
+	 */
+	headers?: { [name: string]: string }
+	/** What goes out, at most 128 MB; a string goes as UTF-8. Not with GET or HEAD. */
+	body?: string | ArrayBuffer | ArrayBufferView
+}
+
+/** What came back. A status of the far side, 404 or 500 say, is an answer and not a refusal. */
+interface AddonFetchAnswer<Body> {
+	status: number
+	/** By lower-case name. */
+	headers: { [name: string]: string }
+	body: Body
+}
+
+/**
+ * The internet. Needs `net` in `needs`; the call goes out from Regletto, never from your surface.
+ * Only `https:`, and every hop of a redirect too: a redirect to `http:` is refused before anything goes to it,
+ * and so is an address with a user or a password in it. At most 20 redirects.
+ * An answer holds at most 128 MB, as much as one file in `files`. A call lasts at most 20 minutes, all its hops together,
+ * and ends sooner where nothing arrives for 5 minutes. At most four of your calls run at once; a further one waits its turn,
+ * and its 20 minutes begin when it goes out. Switching the add-on off, removing it or reloading it stops what is running.
+ * What did not arrive is thrown, never an empty answer: the message carries `net.fetch(): offline` where the far side
+ * could not be reached (no network, no such name, the line broke), and `net.fetch(): timeout` past either deadline.
+ * Every request stands in your log with its method and address, and every call that threw with its address and message,
+ * also for an add-on from the store.
+ */
+interface AddonNet {
+	/** The body as UTF-8 text. */
+	fetch(address: string, options: AddonFetchOptions & { as: 'text' }): Promise<AddonFetchAnswer<string>>
+	/** The body as bytes. */
+	fetch(address: string, options?: AddonFetchOptions): Promise<AddonFetchAnswer<ArrayBuffer>>
+}
+
 /**
  * A shortcut the author presses anywhere in the window, and may lay on another key in the settings.
  * One laid in addon.js or panel.js is kept: from the next start on it stands before that surface runs,
@@ -243,6 +283,8 @@ interface Addon {
 	readonly store: AddonStore
 	/** The add-on's own folder for files, a downloaded model say. Not in overlay.js, and editor.js has none. */
 	readonly files: AddonFiles
+	/** The internet, with `net` in needs: a model to download, a service to ask. Not in overlay.js, and editor.js has none. */
+	readonly net: AddonNet
 	/**
 	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
 	 * Read, never set: the author sets them in the add-on's own category of the settings window where `settings.category` gives one,
