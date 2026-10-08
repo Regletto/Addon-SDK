@@ -151,14 +151,19 @@ interface AddonStore {
 	write<T>(data: T): Promise<void>
 }
 
-/** A shortcut the author presses anywhere in the window, and may lay on another key in the settings. */
+/**
+ * A shortcut the author presses anywhere in the window, and may lay on another key in the settings.
+ * One laid in addon.js or panel.js is kept: from the next start on it stands before that surface runs,
+ * and a press builds the surface out of sight. The first time, it stands once the surface has run.
+ */
 interface AddonShortcut {
 	/** Your name for it: a-z, 0-9 and "-", 2 to 64 characters. The same id again replaces your shortcut. */
 	id: string
 	/**
 	 * The default key, written the way Regletto writes it: `Ctrl`, `Alt`, `Shift` in this order and one key,
 	 * `'Ctrl+Shift+M'`. It needs `Ctrl` or `Alt`, or is an F-key alone. `''` is none, and the author may give one.
-	 * A key that is taken stays with the one who had it: yours stands without one, and the log says so.
+	 * A key that is taken stays with the one who had it, and one on Backspace, Delete or an arrow stays the text's:
+	 * yours stands without one, and the log says so.
 	 */
 	key: string
 	/** The name the settings list it under: 1 to 40 characters, or one per language. */
@@ -194,6 +199,7 @@ interface Addon {
 	settings(): Promise<{ [id: string]: any }>
 	/** The author changed a setting. The whole set comes along. */
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
+	/** In addon.js and panel.js; editor.js has the same as `host.keys`. Not in dialog.js or overlay.js. */
 	readonly keys: AddonKeys
 }
 
