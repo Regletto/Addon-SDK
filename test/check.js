@@ -50,6 +50,12 @@ assert.strictEqual(other[0].message, '"engines" has no entry for Regletto Sample
 const reasonless = judged({ ...SOUND, needs: ['workspace'] }).problems
 assert.deepStrictEqual(reasonless.map((problem) => problem.code), ['RA016'])
 assert.match(reasonless[0].message, /"why"/, 'the message of RA016 does not name what is missing')
+// Standard v2: `settings` as a bare list of rows, the form before; the sample has no
+// settings, so the product's verdict is handed in.
+const listed = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA017', field: 'settings' } }) } }
+const bare = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, listed).problems
+assert.deepStrictEqual(bare.map((problem) => [problem.code, problem.field]), [['RA017', 'settings']])
+assert.match(bare[0].message, /"rows"/, 'the message of RA017 does not name the form the rows stand in now')
 // A code this base has no words for, from a product newer than the base: the
 // finding names the code and its page, and nothing dies on it.
 const newer = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA999', field: 'needs' } }) } }
