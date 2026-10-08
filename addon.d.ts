@@ -195,7 +195,11 @@ interface Addon {
 	readonly views: AddonViews
 	/** The note that travels with the project: `<project>/addons/<id>.json`. */
 	readonly store: AddonStore
-	/** The values of `settings` in addon.json, `{ <id>: value }`. A row nobody touched answers its `default`. Read, never set. */
+	/**
+	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
+	 * Read, never set: the author sets them in the add-on's own category of the settings window where `settings.category` gives one,
+	 * else behind the add-on's card.
+	 */
 	settings(): Promise<{ [id: string]: any }>
 	/** The author changed a setting. The whole set comes along. */
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
