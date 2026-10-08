@@ -318,15 +318,15 @@ interface AddonNotice {
 /**
  * The add-on's own background process: worker.js at the root of its folder, asked for with `"worker": true` in addon.json.
  * For work too heavy for a surface, a model say. Regletto starts it on the first call and keeps it; switching the add-on off,
- * removing it or reloading it stops it, and the next call after that starts it again.
+ * removing, updating or reloading it stops it, and the next call after that starts it again.
  */
 interface AddonWorker {
 	/**
 	 * Calls what worker.js serves under `name` with copies of `args`, and answers a copy of what it answered.
-	 * Data crosses, a function or a node does not. What the served function threw is thrown with its own message;
-	 * what Regletto says begins with `worker.call():` and a fixed word: `timeout` where the call took longer than
-	 * five minutes (the process is then stopped), `stopped` where the process was stopped before it answered,
-	 * `crashed` where it ended by itself. A name worker.js does not serve is refused the same way.
+	 * Data crosses, a function or a node does not. What the served function threw is thrown, and the message carries
+	 * its own; what Regletto says, the message carries as `worker.call():` and a fixed word: `timeout` where the call
+	 * took longer than five minutes (the process is then stopped), `stopped` where the process was stopped before it
+	 * answered, `crashed` where it ended by itself. A name worker.js does not serve is refused the same way.
 	 */
 	call<T = unknown>(name: string, ...args: unknown[]): Promise<T>
 }
