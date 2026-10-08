@@ -21,7 +21,14 @@ const { unzip } = require('../lib/zip.js')
 const product = require('./sample/product.js')
 
 const BIN = path.join(__dirname, 'sample', 'bin.js')
-const SOUND = { id: 'acme.sample', title: 'Sample', version: '1.0.0', engines: { sample: '>=1.0.0' }, needs: ['workspace'], tray: {} }
+const SOUND = {
+	id: 'acme.sample',
+	title: 'Sample',
+	version: '1.0.0',
+	engines: { sample: '>=1.0.0' },
+	needs: [{ need: 'workspace', why: 'Shows the tray in a workspace of its own.' }],
+	tray: {}
+}
 const ENTRIES = [{ name: 'addon.js', size: 1 }, { name: 'tray.js', size: 1 }]
 
 const codesOf = (result) => result.problems.map((problem) => problem.code)
@@ -39,6 +46,17 @@ assert.deepStrictEqual(codesWith((manifest) => { manifest.colour = 'red' }), ['R
 const other = judged({ ...SOUND, engines: { other: '>=1.0.0' } }).problems
 assert.deepStrictEqual(other.map((problem) => problem.code), ['RA008'])
 assert.strictEqual(other[0].message, '"engines" has no entry for Regletto Sample, "sample".', 'the message names the product')
+// Standard v2: a permission without its reason, the old form of `needs` among them.
+const reasonless = judged({ ...SOUND, needs: ['workspace'] }).problems
+assert.deepStrictEqual(reasonless.map((problem) => problem.code), ['RA016'])
+assert.match(reasonless[0].message, /"why"/, 'the message of RA016 does not name what is missing')
+// A code this base has no words for, from a product newer than the base: the
+// finding names the code and its page, and nothing dies on it.
+const newer = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA999', field: 'needs' } }) } }
+const unknown = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, newer).problems
+assert.deepStrictEqual(unknown.map((problem) => [problem.code, problem.field]), [['RA999', 'needs']])
+assert.match(unknown[0].message, /no message for this code/, 'a code without words does not say so')
+assert.strictEqual(unknown[0].url, 'https://regletto.com/developers/errors/RA999')
 
 // What the base finds itself.
 assert.deepStrictEqual(codesWith((manifest) => { manifest.id = 'nul.sample' }), ['RA006'])
