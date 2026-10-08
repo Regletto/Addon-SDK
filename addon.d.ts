@@ -217,12 +217,13 @@ interface AddonNet {
 	/** The body as bytes. */
 	fetch(address: string, options?: AddonFetchOptions): Promise<AddonFetchAnswer<ArrayBuffer>>
 	/**
-	 * Downloads a file straight into your own folder (`files`) at `path`: the way for a file too large to cross
-	 * in one piece, a model of a gigabyte say. It goes to the disk as it arrives, beside its place, and is moved in
-	 * whole once it arrived and its checksum held; until then what stood at `path` stays, and if it fails nothing stays.
-	 * The same rules as `fetch()` (https: on every hop, every request in your log), but no 128 MB: a file may be as large
-	 * as the folder has room for, and no deadline but a silence of 5 minutes. At most four of your downloads run at once,
-	 * a further one waits its turn; one per path. Switching the add-on off, removing it or reloading it stops them.
+	 * Downloads a file straight into your own folder (`files`) at `path`: the way for a file too large for your archive,
+	 * a model say. It goes to the disk as it arrives, never whole into memory, and is moved to `path` whole once it arrived
+	 * and its checksum held; until then what stood at `path` stays, and if it fails or is stopped nothing stays, not even
+	 * a folder on its way. The same rules as `fetch()` (https: on every hop, every request in your log), and at most 128 MB,
+	 * as much as one file in `files` holds and `files.read()` carries, within the room the folder has left. No deadline
+	 * but a silence of 5 minutes. At most four of your downloads run at once, a further one waits its turn; one per path,
+	 * whatever the case of its letters. Switching the add-on off, removing it or reloading it stops them.
 	 *
 	 * Start it from a click of the author: Regletto never downloads by itself, and a download nobody asked for
 	 * spends their bandwidth and their disk.
@@ -232,7 +233,11 @@ interface AddonNet {
 	 * a full folder as with `files`.
 	 */
 	download(address: string, path: string, options?: AddonDownloadOptions): Promise<AddonDownloaded>
-	/** Stops the download into `path`, running or waiting; it throws `net.download(): stopped`. `false` where there was none. */
+	/**
+	 * Stops the download into `path`, running or waiting, and answers once it let go of `path`, so a new download into it
+	 * may follow at once: `true` where it stopped (it throws `net.download(): stopped`), `false` where there was none or it
+	 * was whole before the stop came.
+	 */
 	stopDownload(path: string): Promise<boolean>
 }
 
