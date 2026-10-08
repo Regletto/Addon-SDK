@@ -181,7 +181,7 @@ interface AddonKeys {
 /**
  * A line in the corner of the window, drawn by Regletto in its own shape with your add-on's name before the sentence.
  * A `'done'` line without a button goes by itself after 3 s and 2 s of fading; a failure and a line with a button
- * stay until the author clicks.
+ * stay until the author clicks, your next line replaces them, or a strip of Regletto's own takes their place.
  */
 interface AddonNotice {
 	/** One sentence on one line: 1 to 80 characters, or one per language. */
@@ -227,7 +227,8 @@ interface Addon {
 	/**
 	 * Shows a line in the corner of the window. In addon.js and panel.js; editor.js has the same as `host.notify`.
 	 * Not in dialog.js or overlay.js. Your next line replaces it, and it goes when the add-on is switched off.
-	 * A strip of Regletto's that waits for the author is not displaced: then nothing shows, and the log says so.
+	 * A strip that waits for the author, Regletto's or another add-on's failure or button, is not displaced:
+	 * then nothing shows, and the log says so. A strip of Regletto's own may take your line's place, button and all.
 	 * Refuses a line that misses its form.
 	 */
 	notify(notice: AddonNotice): Promise<void>
