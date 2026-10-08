@@ -162,8 +162,9 @@ type AddonFileEntry =
  *
  * A path is relative, with `/` between its parts: at most 8 parts and 120 characters, none of `\ < > : " | ? *`
  * and no control or format character, no part ending in a dot or a space, and no part named for a Windows device,
- * with or without an extension: `con`, `nul`, `aux.json` and `com1.txt` are all refused. One file holds at most 128 MB;
- * the folder at most 1 GB and 10 000 files. A refusal is thrown and names no path of this machine.
+ * with or without an extension: `con`, `nul`, `aux.json` and `com1.txt` are all refused. So is a part ending in
+ * `.<digits>-<digits>.part`, like `model.bin.1-2.part`: that name is Regletto's own, for a file on its way in.
+ * One file holds at most 128 MB; the folder at most 1 GB and 10 000 files. A refusal is thrown and names no path of this machine.
  */
 interface AddonFiles {
 	/** The file as bytes, or `null` where nothing is there. A folder is refused. */
