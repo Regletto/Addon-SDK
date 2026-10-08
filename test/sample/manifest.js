@@ -12,7 +12,7 @@ const CODES = {
 	tooMany: 'RA013', tooBig: 'RA014', tooLarge: 'RA015', why: 'RA016'
 }
 
-const FIELDS = ['$schema', 'id', 'title', 'version', 'engines', 'needs', 'tray']
+const FIELDS = ['$schema', 'id', 'title', 'version', 'engines', 'needs', 'tray', 'worker']
 const REQUIRED = ['id', 'title', 'version', 'engines', 'needs']
 
 function read (text) {

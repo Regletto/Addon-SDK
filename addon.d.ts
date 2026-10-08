@@ -315,6 +315,22 @@ interface AddonNotice {
 	}
 }
 
+/**
+ * The add-on's own background process: worker.js at the root of its folder, asked for with `"worker": true` in addon.json.
+ * For work too heavy for a surface, a model say. Regletto starts it on the first call and keeps it; switching the add-on off,
+ * removing it or reloading it stops it, and the next call after that starts it again.
+ */
+interface AddonWorker {
+	/**
+	 * Calls what worker.js serves under `name` with copies of `args`, and answers a copy of what it answered.
+	 * Data crosses, a function or a node does not. What the served function threw is thrown with its own message;
+	 * what Regletto says begins with `worker.call():` and a fixed word: `timeout` where the call took longer than
+	 * five minutes (the process is then stopped), `stopped` where the process was stopped before it answered,
+	 * `crashed` where it ended by itself. A name worker.js does not serve is refused the same way.
+	 */
+	call<T = unknown>(name: string, ...args: unknown[]): Promise<T>
+}
+
 /** `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data. */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
@@ -332,10 +348,23 @@ interface Addon {
 	readonly views: AddonViews
 	/** The note that travels with the project: `<project>/addons/<id>.json`. */
 	readonly store: AddonStore
-	/** The add-on's own folder for files, a downloaded model say. Not in overlay.js, and editor.js has none. */
+	/** The add-on's own folder for files, a downloaded model say. In worker.js too; not in overlay.js, and editor.js has none. */
 	readonly files: AddonFiles
-	/** The internet, with `net` in needs: a service to ask, a model to download into `files`. Not in overlay.js, and editor.js has none. */
+	/** The internet, with `net` in needs: a service to ask, a model to download into `files`. In worker.js too; not in overlay.js, and editor.js has none. */
 	readonly net: AddonNet
+	/** The add-on's worker.js, with `"worker": true` in addon.json. In addon.js, panel.js and dialog.js; not in overlay.js, and editor.js has none. */
+	readonly worker: AddonWorker
+	/**
+	 * In worker.js only. Serves `name` to `addon.worker.call(name, …args)`: `answer` gets copies of the arguments, and what it
+	 * answers, or what its promise resolves to, goes back as a copy. The same name again replaces it; the function returned
+	 * stops serving it. A name is a-z, 0-9 and "-", 2 to 64 characters.
+	 *
+	 * worker.js runs in a process of its own, as CommonJS: `require` gives `assert`, `buffer`, `crypto`, `events`,
+	 * `string_decoder`, `util` and `zlib` of Node, and the add-on's own .js and .json files by `./`, named with their extension.
+	 * There it has `addon.serve`, `addon.files`, `addon.net` and `addon.log`, and no `process`, `fetch`, `WebSocket` or `__filename`.
+	 * Its console and every error nobody caught go to the add-on's log; a stack names its files and no folder of the machine.
+	 */
+	serve(name: string, answer: (...args: any[]) => unknown): () => void
 	/**
 	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
 	 * Read, never set: the author sets them in the add-on's own category of the settings window where `settings.category` gives one,
