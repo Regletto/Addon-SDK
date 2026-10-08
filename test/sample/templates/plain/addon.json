@@ -3,5 +3,5 @@
 	"title": {{title}},
 	"version": "0.1.0",
 	"engines": { "sample": ">=1.0.0" },
-	"needs": ["workspace"]
+	"needs": [{ "need": "workspace", "why": "Shows the sample in a workspace of its own." }]
 }

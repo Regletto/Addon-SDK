@@ -9,7 +9,7 @@ const meaningfulTitle = (v) => typeof v === 'string' && v.trim().length > 0 && v
 const CODES = {
 	noJson: 'RA001', form: 'RA002', missing: 'RA003', unknown: 'RA004', engine: 'RA005', name: 'RA006',
 	mismatch: 'RA007', product: 'RA008', old: 'RA009', noManifest: 'RA010', noEntry: 'RA011', entry: 'RA012',
-	tooMany: 'RA013', tooBig: 'RA014', tooLarge: 'RA015'
+	tooMany: 'RA013', tooBig: 'RA014', tooLarge: 'RA015', why: 'RA016'
 }
 
 const FIELDS = ['$schema', 'id', 'title', 'version', 'engines', 'needs', 'tray']
@@ -27,6 +27,7 @@ function read (text) {
 	const missing = REQUIRED.find((field) => !Object.hasOwn(parsed, field))
 	if (missing) return { ok: false, error: { code: CODES.missing, field: missing } }
 	if (!ID_RE.test(parsed.id)) return { ok: false, error: { code: CODES.form, field: 'id' } }
+	if (!parsed.needs.every((entry) => entry?.why)) return { ok: false, error: { code: CODES.why, field: 'needs' } }
 	if (!Object.hasOwn(parsed.engines, 'sample')) return { ok: false, error: { code: CODES.product, field: 'engines' } }
 	return { ok: true, manifest: parsed }
 }
