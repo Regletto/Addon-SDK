@@ -73,6 +73,11 @@ const tray = judged(SOUND, [{ name: 'addon.js', size: 1 }]).problems
 assert.deepStrictEqual(tray.map((problem) => problem.code), ['RA011'], 'a surface of the product, without its file')
 assert.strictEqual(tray[0].message, '"tray" is set, but there is no tray.js.')
 assert.deepStrictEqual(codesWith((manifest) => { delete manifest.tray }, [{ name: 'addon.js', size: 1 }]), [], 'no tray, no tray.js needed')
+// The worker is a surface of every product: `"worker": true` asks for worker.js.
+const worker = judged({ ...SOUND, worker: true }).problems
+assert.deepStrictEqual(worker.map((problem) => [problem.code, problem.field]), [['RA011', 'worker']], 'a worker without worker.js')
+assert.strictEqual(worker[0].message, '"worker" is set, but there is no worker.js.')
+assert.deepStrictEqual(codesOf(judged({ ...SOUND, worker: true }, [...ENTRIES, { name: 'worker.js', size: 1 }])), [], 'a worker with its worker.js')
 
 // RA012: a path that cannot be laid down.
 const REFUSED_PATHS = [
