@@ -151,6 +151,32 @@ interface AddonStore {
 	write<T>(data: T): Promise<void>
 }
 
+/** One entry of a folder, as `files.list()` answers it. */
+type AddonFileEntry =
+	| { name: string; kind: 'file'; size: number }
+	| { name: string; kind: 'folder' }
+
+/**
+ * The add-on's own folder on this machine, `<userData>/addons-data/<id>/`: what it downloaded or made, never the author's files.
+ * It stays when the add-on is switched off or updated, and goes to the recycle bin when it is removed. Needs no permission.
+ *
+ * A path is relative, with `/` between its parts: at most 8 parts and 120 characters, none of `\ < > : " | ? *`,
+ * no part ending in a dot or a space, no device name such as `con` or `nul`. One file holds at most 128 MB;
+ * the folder at most 1 GB and 10 000 files.
+ */
+interface AddonFiles {
+	/** The file as bytes, or `null` where nothing is there. A folder is refused. */
+	read(path: string): Promise<ArrayBuffer | null>
+	/** The file as UTF-8 text, or `null` where nothing is there. */
+	read(path: string, as: 'text'): Promise<string | null>
+	/** Replaces the file whole, and lays the folders on its way. A string is stored as UTF-8. */
+	write(path: string, data: string | ArrayBuffer | ArrayBufferView): Promise<void>
+	/** One level, by name. No path, or `''`, is the folder itself; `null` where no such folder is. */
+	list(path?: string): Promise<AddonFileEntry[] | null>
+	/** Moves a file, or a folder with everything in it, to the recycle bin. `false` where nothing was there. */
+	remove(path: string): Promise<boolean>
+}
+
 /**
  * A shortcut the author presses anywhere in the window, and may lay on another key in the settings.
  * One laid in addon.js or panel.js is kept: from the next start on it stands before that surface runs,
@@ -214,6 +240,8 @@ interface Addon {
 	readonly views: AddonViews
 	/** The note that travels with the project: `<project>/addons/<id>.json`. */
 	readonly store: AddonStore
+	/** The add-on's own folder for files, a downloaded model say. Not in overlay.js, and editor.js has none. */
+	readonly files: AddonFiles
 	/**
 	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
 	 * Read, never set: the author sets them in the add-on's own category of the settings window where `settings.category` gives one,
