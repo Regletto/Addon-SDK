@@ -216,6 +216,51 @@ interface AddonNet {
 	fetch(address: string, options: AddonFetchOptions & { as: 'text' }): Promise<AddonFetchAnswer<string>>
 	/** The body as bytes. */
 	fetch(address: string, options?: AddonFetchOptions): Promise<AddonFetchAnswer<ArrayBuffer>>
+	/**
+	 * Downloads a file straight into your own folder (`files`) at `path`: the way for a file too large to cross
+	 * in one piece, a model of a gigabyte say. It goes to the disk as it arrives, beside its place, and is moved in
+	 * whole once it arrived and its checksum held; until then what stood at `path` stays, and if it fails nothing stays.
+	 * The same rules as `fetch()` (https: on every hop, every request in your log), but no 128 MB: a file may be as large
+	 * as the folder has room for, and no deadline but a silence of 5 minutes. At most four of your downloads run at once,
+	 * a further one waits its turn; one per path. Switching the add-on off, removing it or reloading it stops them.
+	 *
+	 * Start it from a click of the author: Regletto never downloads by itself, and a download nobody asked for
+	 * spends their bandwidth and their disk.
+	 *
+	 * Thrown, with its word in the message: `net.download(): status 404` where the far side answered anything but 2xx,
+	 * `net.download(): sha256` where the checksum did not hold, `offline`, `timeout`, `stopped`, and a refused path or
+	 * a full folder as with `files`.
+	 */
+	download(address: string, path: string, options?: AddonDownloadOptions): Promise<AddonDownloaded>
+	/** Stops the download into `path`, running or waiting; it throws `net.download(): stopped`. `false` where there was none. */
+	stopDownload(path: string): Promise<boolean>
+}
+
+/** What a download carries besides its address and path. Any other field is refused. */
+interface AddonDownloadOptions {
+	/** Called on the first bytes, then at most every 400 ms, and once when all arrived. */
+	onProgress?: (progress: AddonDownloadProgress) => void
+	/**
+	 * The SHA-256 of the file, 64 hexadecimal characters. What arrived otherwise is laid down nowhere.
+	 * There is no `signal`: an `AbortSignal` does not cross into Regletto, `stopDownload(path)` stops a download.
+	 */
+	sha256?: string
+}
+
+/** How far a download has come. */
+interface AddonDownloadProgress {
+	/** The bytes that arrived so far. */
+	loaded: number
+	/** The bytes the far side announced, `null` where it said nothing. */
+	total: number | null
+}
+
+/** What a download laid down. */
+interface AddonDownloaded {
+	/** In bytes. */
+	size: number
+	/** The SHA-256 of the file, 64 lower-case hexadecimal characters. */
+	sha256: string
 }
 
 /**
@@ -283,7 +328,7 @@ interface Addon {
 	readonly store: AddonStore
 	/** The add-on's own folder for files, a downloaded model say. Not in overlay.js, and editor.js has none. */
 	readonly files: AddonFiles
-	/** The internet, with `net` in needs: a model to download, a service to ask. Not in overlay.js, and editor.js has none. */
+	/** The internet, with `net` in needs: a service to ask, a model to download into `files`. Not in overlay.js, and editor.js has none. */
 	readonly net: AddonNet
 	/**
 	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
