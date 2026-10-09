@@ -299,7 +299,7 @@ interface AddonKeys {
 /** The menus of the product's menu bar a row can stand in, by name. The product's declaration names them. */
 interface AddonMenus {}
 
-/** What a pick in the menu bar tells `run`. */
+/** What a pick in the menu bar, or a press of the row's `key`, tells `run`. */
 interface AddonMenuContext {
 	/** The menu the row stands in. */
 	menu: keyof AddonMenus
@@ -366,7 +366,10 @@ type AddonMenuEntry = AddonMenuAction | AddonMenuList
  * and a pick builds the surface out of sight.
  */
 interface AddonMenuBar {
-	/** Adds a row at the foot of `menu`, at most 20 entries per add-on. Refuses one that misses its form, and nothing is laid. */
+	/**
+	 * Adds a row at the foot of `menu`, at most 20 entries per add-on; a row with `key` counts among the add-on's 20 shortcuts too.
+	 * Refuses one that misses its form or finds no room, and nothing is laid.
+	 */
 	add(entry: AddonMenuEntry): Promise<void>
 }
 
