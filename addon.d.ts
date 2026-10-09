@@ -296,6 +296,80 @@ interface AddonKeys {
 	add(shortcut: AddonShortcut): Promise<void>
 }
 
+/** The menus of the product's menu bar a row can stand in, by name. The product's declaration names them. */
+interface AddonMenus {}
+
+/** What a pick in the menu bar tells `run`. */
+interface AddonMenuContext {
+	/** The menu the row stands in. */
+	menu: keyof AddonMenus
+}
+
+/** A row in the list of an entry with `items`. */
+interface AddonMenuItem {
+	/** a-z, 0-9 and "-", 2 to 64 characters; unique in its list. */
+	id: string
+	/** 1 to 40 characters on one line, or one per language. */
+	label: AddonText
+	/** A name from Material Symbols Rounded. */
+	icon?: string
+	/** Makes the row a switch in this state. Lay the entry again to change it. */
+	checked?: boolean
+	/** Called where the entry was laid. The pick counts as the author pressing. */
+	run(context: AddonMenuContext): unknown
+}
+
+interface AddonMenuEntryBase {
+	/** The menu it stands in, at its foot behind a line. An add-on lays no menu of its own. */
+	menu: keyof AddonMenus
+	/** a-z, 0-9 and "-", 2 to 64 characters. The same id again replaces your row, in its place. */
+	id: string
+	/** 1 to 40 characters on one line, or one per language. */
+	label: AddonText
+	/** A name from Material Symbols Rounded. */
+	icon: string
+}
+
+/** A row that does something. */
+interface AddonMenuAction extends AddonMenuEntryBase {
+	/**
+	 * Lays the shortcut of the same id, as `addon.keys.add()` does, with this label and `run`; the key follows its rules.
+	 * The row names the key in force, the one the author may have given it.
+	 */
+	key?: string
+	/** Makes the row a switch in this state. Lay the entry again to change it. */
+	checked?: boolean
+	/** Called where the entry was laid. The pick counts as the author pressing. */
+	run(context: AddonMenuContext): unknown
+	/** A row with `run` opens no list. */
+	items?: never
+}
+
+/** A row that opens a list of your own, one level deep. */
+interface AddonMenuList extends AddonMenuEntryBase {
+	/** 1 to 20 rows. */
+	items: AddonMenuItem[]
+	/** Each item runs, not the row that opens them. */
+	run?: never
+	/** A row that opens a list has no shortcut. */
+	key?: never
+	/** A row that opens a list is no switch. */
+	checked?: never
+}
+
+/** A row in a menu of the menu bar. */
+type AddonMenuEntry = AddonMenuAction | AddonMenuList
+
+/**
+ * Rows in the menus of the product's menu bar. Every one of them goes when the add-on is switched off.
+ * One laid in addon.js or panel.js is kept: from the next start on it stands before that surface runs,
+ * and a pick builds the surface out of sight.
+ */
+interface AddonMenuBar {
+	/** Adds a row at the foot of `menu`, at most 20 entries per add-on. Refuses one that misses its form, and nothing is laid. */
+	add(entry: AddonMenuEntry): Promise<void>
+}
+
 /**
  * A line in the corner of the window, drawn by Regletto in its own shape with your add-on's name before the sentence.
  * A `'done'` line without a button goes by itself after 3 s and 2 s of fading; a failure and a line with a button
@@ -375,6 +449,8 @@ interface Addon {
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
 	/** In addon.js and panel.js; editor.js has the same as `host.keys`. Not in dialog.js or overlay.js. */
 	readonly keys: AddonKeys
+	/** In addon.js and panel.js; editor.js has the same as `host.menu`, with `when` and `checked` asked as the menu opens. Not in dialog.js or overlay.js. */
+	readonly menu: AddonMenuBar
 	/**
 	 * Shows a line in the corner of the window. In addon.js and panel.js; editor.js has the same as `host.notify`.
 	 * Not in dialog.js or overlay.js. Your next line replaces it, and it goes when the add-on is switched off.
