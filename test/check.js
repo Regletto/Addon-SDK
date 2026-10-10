@@ -69,6 +69,12 @@ const bareFont = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, upright)
 assert.deepStrictEqual(bareFont.map((problem) => [problem.code, problem.field, problem.font]), [['RA019', 'fonts', 'serif']])
 assert.strictEqual(bareFont[0].message, 'The font "serif" in "fonts" has no "regular" cut: every family needs its upright one.',
 	'the message of RA019 does not name the font')
+// Standard v2: an offer in `provides` with nothing of the add-on running to answer it.
+const unanswered = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA020', field: 'provides' } }) } }
+const noProvider = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, unanswered).problems
+assert.deepStrictEqual(noProvider.map((problem) => [problem.code, problem.field]), [['RA020', 'provides']])
+assert.strictEqual(noProvider[0].message, '"provides" names what other add-ons may ask for, but nothing of this add-on runs to answer: ' +
+	'it needs "workspace" in "needs", a "tray" or "worker": true.', 'the message of RA020 does not say, in the product\'s words, what answers an offer')
 // A file the manifest names that only the product knows (Writing's font files): there,
 // nothing; missing, RA011 with the path.
 assert.deepStrictEqual(codesWith((manifest) => { manifest.tray = { sheet: 'tray.css' } }, [...ENTRIES, { name: 'tray.css', size: 1 }]), [])
