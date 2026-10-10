@@ -198,7 +198,8 @@ try {
 	assert.match(broken.stdout, /addon\.json: RA011 needs: /)
 	assert.ok(!fs.existsSync(path.join(dir, 'dist')), 'and nothing is built')
 	const json = JSON.parse(run('check', '--json').stdout)
-	assert.deepStrictEqual(json.problems.map((problem) => problem.code), ['RA011'], '--json says the same')
+	assert.deepStrictEqual(json.problems.map(surfaceOf), [['RA011', 'needs', 'workspace', 'addon.js']],
+		'--json says the same, with the file and what asks for it')
 
 	// No command, or a wrong one, prints the usage with the product's name.
 	const help = run()
