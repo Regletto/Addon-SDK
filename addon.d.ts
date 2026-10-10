@@ -446,23 +446,24 @@ interface AddonUse {
 
 /**
  * `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data.
- * Of the core, worker.js has only `serve`, `provide`, `use`, `files`, `net` and `log`.
+ * Of the core, worker.js has only `serve`, `provide`, `use`, `files`, `net` and `log`; overlay.js only `lang`, `theme`,
+ * `views` and `log`.
  */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
 	readonly lang: string
 	/**
 	 * The author changed the language. Regletto translates the frame itself; redraw what you drew.
-	 * Every `on…` answers a function that stops listening.
+	 * Every `on…` answers a function that stops listening. Not in overlay.js or worker.js.
 	 */
 	onLang(fn: (lang: string) => void): () => void
 	/** The author's theme. Does not change; `onTheme()` says when it did. `null` if the program could not read its palettes. */
 	readonly theme: AddonTheme | null
-	/** The theme changed. The CSS properties on `:root` are already new when this runs. */
+	/** The theme changed. The CSS properties on `:root` are already new when this runs. Not in overlay.js or worker.js. */
 	onTheme(fn: (theme: AddonTheme) => void): () => void
 	readonly log: AddonLog
 	readonly views: AddonViews
-	/** The note that travels with the project: `<project>/addons/<id>.json`. */
+	/** The note that travels with the project: `<project>/addons/<id>.json`. Not in overlay.js or worker.js. */
 	readonly store: AddonStore
 	/** The add-on's own folder for files, a downloaded model say. In addon.js, panel.js, dialog.js and worker.js; not in overlay.js, and editor.js has none. */
 	readonly files: AddonFiles
@@ -476,7 +477,8 @@ interface Addon {
 	/**
 	 * In worker.js only. Serves `name` to `addon.worker.call(name, …args)`: `answer` gets copies of the arguments, and what it
 	 * answers, or what its promise resolves to, goes back as a copy. The same name again replaces it; the function returned
-	 * stops serving it. A name is a-z, 0-9 and "-", 2 to 64 characters.
+	 * stops serving it. A name is a-z, 0-9 and "-", 2 to 64 characters. An argument without a declared type is `unknown`,
+	 * since any caller may send anything: declare it, `(text: string) => …`.
 	 *
 	 * worker.js runs in a process of its own, as CommonJS: `require` gives `assert`, `buffer`, `crypto`, `events`,
 	 * `string_decoder`, `util` and `zlib` of Node, and the add-on's own .js and .json files by `./`, named with their extension.
@@ -506,10 +508,10 @@ interface Addon {
 	/**
 	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
 	 * Read, never set: the author sets them in the add-on's own category of the settings window where `settings.category` gives one,
-	 * else behind the add-on's card.
+	 * else behind the add-on's card. Not in overlay.js or worker.js.
 	 */
 	settings(): Promise<{ [id: string]: any }>
-	/** The author changed a setting. The whole set comes along. */
+	/** The author changed a setting. The whole set comes along. Not in overlay.js or worker.js. */
 	onSettings(fn: (values: { [id: string]: any }) => void): () => void
 	/** In addon.js and panel.js; editor.js has the same as `host.keys`. Not in dialog.js or overlay.js. */
 	readonly keys: AddonKeys
