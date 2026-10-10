@@ -75,6 +75,11 @@ assert.deepStrictEqual(codesWith((manifest) => { manifest.tray = { sheet: 'tray.
 const unnamed = judged({ ...SOUND, tray: { sheet: 'tray.css' } }).problems
 assert.deepStrictEqual(unnamed.map((problem) => [problem.code, problem.field, problem.path]), [['RA011', 'tray', 'tray.css']])
 assert.strictEqual(unnamed[0].message, '"tray" names tray.css, but there is no such file.', 'the message of RA011 does not name the file')
+// One in a folder no archive takes is on the disk, and the message says why it is still missing.
+const unpacked = judged({ ...SOUND, tray: { sheet: 'dist/tray.css' } }).problems
+assert.deepStrictEqual(unpacked.map((problem) => [problem.code, problem.field, problem.path]), [['RA011', 'tray', 'dist/tray.css']])
+assert.strictEqual(unpacked[0].message, '"tray" names dist/tray.css, but "dist" never goes into the archive.',
+	'the message of RA011 says a file in a folder that is never packed is not there')
 // A code this base has no words for, from a product newer than the base: the
 // finding names the code and its page, and nothing dies on it.
 const newer = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA999', field: 'needs' } }) } }
