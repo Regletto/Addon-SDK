@@ -1,6 +1,6 @@
 {
 	"name": "@regletto/addon-sdk",
-	"version": "1.0.2",
+	"version": "2.0.0",
 	"description": "The base of the SDKs for Regletto add-ons: the commands, the core of the API and of addon.json. Install the SDK of your product.",
 	"license": "MIT",
 	"author": "Regletto",
