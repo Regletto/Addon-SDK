@@ -408,6 +408,23 @@ interface AddonWorker {
 	call<T = unknown>(name: string, ...args: unknown[]): Promise<T>
 }
 
+/** Another add-on, as `addon.use()` found it: its version, and the way to ask what it provides. */
+interface AddonUse {
+	/** Its version, as its addon.json says; for `'program'` the product's own. */
+	readonly version: string
+	/**
+	 * Asks what the other add-on offers under `name`, one of its `provides`, with a copy of `query`, and answers a copy
+	 * of what its function answered. Query and answer are plain data, as JSON has it: no function, node, `undefined`,
+	 * `Date`, `Map` or `ArrayBuffer`, and at most 16 MB written as JSON. `Answer` is the type the other add-on promises.
+	 *
+	 * `null` where the other add-on is gone since `use()` (switched off, removed, too old) or where the surface that offers
+	 * it does not run now; an offer of its worker.js is always reached, since Regletto starts the worker for it. What its
+	 * function threw is thrown with its own message. What Regletto refuses carries `use():` in the message: a name not in
+	 * its `provides`, a query or an answer that is not plain data, and `use(): timeout` past five minutes.
+	 */
+	call<Answer = unknown, Query = unknown>(name: string, query?: Query): Promise<Answer | null>
+}
+
 /** `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data. */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
@@ -438,10 +455,28 @@ interface Addon {
 	 *
 	 * worker.js runs in a process of its own, as CommonJS: `require` gives `assert`, `buffer`, `crypto`, `events`,
 	 * `string_decoder`, `util` and `zlib` of Node, and the add-on's own .js and .json files by `./`, named with their extension.
-	 * There it has `addon.serve`, `addon.files`, `addon.net` and `addon.log`, and no `process`, `fetch`, `WebSocket` or `__filename`.
+	 * There it has `addon.serve`, `addon.provide`, `addon.use`, `addon.files`, `addon.net` and `addon.log`, and no `process`,
+	 * `fetch`, `WebSocket` or `__filename`.
 	 * Its console and every error nobody caught go to the add-on's log; a stack names its files and no folder of the machine.
 	 */
 	serve(name: string, answer: (...args: any[]) => unknown): () => void
+	/**
+	 * Hands `answer` to other add-ons under `name`, one of `provides` in addon.json; they reach it with `addon.use()`.
+	 * In addon.js, panel.js and worker.js: one of addon.js or panel.js is answered while that surface stands, one of
+	 * worker.js whenever asked, since Regletto starts the worker for it. `answer` gets a copy of the query and answers
+	 * plain data, or a promise of it; what it throws, the one who asked gets thrown. Answer at once, as a call waits
+	 * five minutes at most. The same name again replaces the offer, the function returned withdraws it, and every offer
+	 * goes when the add-on is switched off, removed or reloaded. Refuses a name that is not in `provides`.
+	 */
+	provide<Query = unknown, Answer = unknown>(name: string, answer: (query: Query) => Answer | Promise<Answer>): Promise<() => void>
+	/**
+	 * Another add-on, where it is there: `id` stands in `uses` of addon.json with the lowest version you read, and
+	 * nothing installs it along. `null` where it is not installed, switched off, older than `uses` asks or provides nothing:
+	 * the normal case, never an error and no line in any log. `'program'` needs no entry in `uses` and reaches what the
+	 * product offers itself. In addon.js, panel.js, dialog.js and worker.js; not in overlay.js, and editor.js has none.
+	 * Refuses an id that is not in `uses`. Reading another add-on needs no permission; its store stays its own.
+	 */
+	use(id: string): Promise<AddonUse | null>
 	/**
 	 * The values of the rows in `settings.rows` of addon.json, `{ <id>: value }`. A row nobody touched answers its `default`.
 	 * Read, never set: the author sets them in the add-on's own category of the settings window where `settings.category` gives one,
