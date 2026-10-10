@@ -56,6 +56,13 @@ const listed = { ...product, manifest: { ...product.manifest, read: () => ({ ok:
 const bare = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, listed).problems
 assert.deepStrictEqual(bare.map((problem) => [problem.code, problem.field]), [['RA017', 'settings']])
 assert.match(bare[0].message, /"rows"/, 'the message of RA017 does not name the form the rows stand in now')
+// Standard v2: a theme with too little contrast, said with the theme, the mode and the pair.
+const contrast = { theme: 'sage', mode: 'dark', fg: 'dim', bg: 'page', ratio: 1.57, min: 4.5 }
+const pale = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA018', field: 'themes', contrast } }) } }
+const weak = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, pale).problems
+assert.deepStrictEqual(weak.map((problem) => [problem.code, problem.field, problem.contrast]), [['RA018', 'themes', contrast]])
+assert.strictEqual(weak[0].message, 'The theme "sage" in "themes" has too little contrast in dark mode: dim on page is 1.57 : 1, and it needs 4.5 : 1.',
+	'the message of RA018 does not say which theme missed what')
 // A code this base has no words for, from a product newer than the base: the
 // finding names the code and its page, and nothing dies on it.
 const newer = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA999', field: 'needs' } }) } }
