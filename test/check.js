@@ -63,6 +63,18 @@ const weak = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, pale).proble
 assert.deepStrictEqual(weak.map((problem) => [problem.code, problem.field, problem.contrast]), [['RA018', 'themes', contrast]])
 assert.strictEqual(weak[0].message, 'The theme "sage" in "themes" has too little contrast in dark mode: dim on page is 1.57 : 1, and it needs 4.5 : 1.',
 	'the message of RA018 does not say which theme missed what')
+// Standard v2: a font without its upright cut, said with the font.
+const upright = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA019', field: 'fonts', font: 'serif' } }) } }
+const bareFont = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, upright).problems
+assert.deepStrictEqual(bareFont.map((problem) => [problem.code, problem.field, problem.font]), [['RA019', 'fonts', 'serif']])
+assert.strictEqual(bareFont[0].message, 'The font "serif" in "fonts" has no "regular" cut: every family needs its upright one.',
+	'the message of RA019 does not name the font')
+// A file the manifest names that only the product knows (Writing's font files): there,
+// nothing; missing, RA011 with the path.
+assert.deepStrictEqual(codesWith((manifest) => { manifest.tray = { sheet: 'tray.css' } }, [...ENTRIES, { name: 'tray.css', size: 1 }]), [])
+const unnamed = judged({ ...SOUND, tray: { sheet: 'tray.css' } }).problems
+assert.deepStrictEqual(unnamed.map((problem) => [problem.code, problem.field, problem.path]), [['RA011', 'tray', 'tray.css']])
+assert.strictEqual(unnamed[0].message, '"tray" names tray.css, but there is no such file.', 'the message of RA011 does not name the file')
 // A code this base has no words for, from a product newer than the base: the
 // finding names the code and its page, and nothing dies on it.
 const newer = { ...product, manifest: { ...product.manifest, read: () => ({ ok: false, error: { code: 'RA999', field: 'needs' } }) } }

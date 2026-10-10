@@ -11,6 +11,8 @@ module.exports = {
 	package: { name: '@regletto/sample-addon-sdk', version: '2.3.4' },
 	manifest: require('./manifest.js'),
 	surfaces: { tray: 'tray.js' },
+	// The sheet a tray may name, as Writing's `fonts` name their files.
+	files: (manifest) => (manifest.tray?.sheet ? [{ field: 'tray', file: manifest.tray.sheet }] : []),
 	templates: path.join(__dirname, 'templates'),
 	kinds: { plain: 'a workspace and nothing else (addon.js)' },
 	example: { path: 'example', how: 'In Regletto Sample: Open.' }
