@@ -282,6 +282,8 @@ interface AddonShortcut {
 	 * `'Ctrl+Shift+M'`. It needs `Ctrl` or `Alt`, or is an F-key alone. `''` is none, and the author may give one.
 	 * A key that is taken stays with the one who had it, and one on Backspace, Delete or an arrow stays the text's:
 	 * yours stands without one, and the log says so.
+	 * `Ctrl+Alt` with a character (`'Ctrl+Alt+M'`, also with `Shift`) is not given either: on keyboards with AltGr,
+	 * the German among them, it types a character and never arrives. With an F-key or Enter it is given.
 	 */
 	key: string
 	/** The name the settings list it under: 1 to 40 characters, or one per language. */
