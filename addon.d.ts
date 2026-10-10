@@ -418,8 +418,8 @@ interface AddonUse {
 	 * `Date`, `Map` or `ArrayBuffer`, and at most 16 MB written as JSON. `Answer` is the type the other add-on promises.
 	 *
 	 * `null` where the other add-on is gone since `use()` (switched off, removed, too old) or where the surface that offers
-	 * it does not run now; an offer of its worker.js is always reached, since Regletto starts the worker for it. What its
-	 * function threw is thrown with its own message. What Regletto refuses carries `use():` in the message: a name not in
+	 * it does not run now; an offer its worker.js lays as it loads is always reached, since Regletto starts the worker for it.
+	 * What its function threw is thrown with its own message. What Regletto refuses carries `use():` in the message: a name not in
 	 * its `provides`, a query or an answer that is not plain data, and `use(): timeout` past five minutes.
 	 */
 	call<Answer = unknown, Query = unknown>(name: string, query?: Query): Promise<Answer | null>
@@ -463,7 +463,8 @@ interface Addon {
 	/**
 	 * Hands `answer` to other add-ons under `name`, one of `provides` in addon.json; they reach it with `addon.use()`.
 	 * In addon.js, panel.js and worker.js: one of addon.js or panel.js is answered while that surface stands, one of
-	 * worker.js whenever asked, since Regletto starts the worker for it. `answer` gets a copy of the query and answers
+	 * worker.js whenever asked, since Regletto starts the worker for it and asks once worker.js has loaded, so lay it as
+	 * worker.js loads, before anything it awaits. `answer` gets a copy of the query and answers
 	 * plain data, or a promise of it; what it throws, the one who asked gets thrown. Answer at once, as a call waits
 	 * five minutes at most. The same name again replaces the offer, the function returned withdraws it, and every offer
 	 * goes when the add-on is switched off, removed or reloaded. Refuses a name that is not in `provides`.
