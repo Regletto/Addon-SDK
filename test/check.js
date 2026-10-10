@@ -3,6 +3,8 @@
 //   * a sound add-on passes, and what the product's own check says comes through
 //     with its code and the product's name in the message,
 //   * one folder per code the base raises itself fails with exactly that code,
+//   * a surface a field or a permission asks for needs its file, and its finding
+//     names both; one its file asks for by being there is never missing,
 //   * build writes an archive that lib/zip.js reads back whole, with only what
 //     runs in it,
 //   * the command exits non-zero on a problem, so it serves in a CI.
@@ -74,7 +76,7 @@ const unanswered = { ...product, manifest: { ...product.manifest, read: () => ({
 const noProvider = judge({ text: JSON.stringify(SOUND), files: ENTRIES }, unanswered).problems
 assert.deepStrictEqual(noProvider.map((problem) => [problem.code, problem.field]), [['RA020', 'provides']])
 assert.strictEqual(noProvider[0].message, '"provides" names what other add-ons may ask for, but nothing of this add-on runs to answer: ' +
-	'it needs "workspace" in "needs", a "tray" or "worker": true.', 'the message of RA020 does not say, in the product\'s words, what answers an offer')
+	'it needs "workspace" in "needs", a "worker" or a "tray".', 'the message of RA020 does not say, in the product\'s words, what answers an offer')
 // A file the manifest names that only the product knows (Writing's font files): there,
 // nothing; missing, RA011 with the path.
 assert.deepStrictEqual(codesWith((manifest) => { manifest.tray = { sheet: 'tray.css' } }, [...ENTRIES, { name: 'tray.css', size: 1 }]), [])
@@ -98,16 +100,27 @@ assert.strictEqual(unknown[0].url, 'https://regletto.com/developers/errors/RA999
 assert.deepStrictEqual(codesWith((manifest) => { manifest.id = 'nul.sample' }), ['RA006'])
 assert.deepStrictEqual(codesOf(judge({ text: null, files: [{ name: 'regletto.json', size: 2 }] }, product)), ['RA009'])
 assert.deepStrictEqual(codesOf(judge({ text: null, files: [] }, product)), ['RA010'])
-assert.deepStrictEqual(codesWith(() => {}, [{ name: 'tray.js', size: 1 }]), ['RA011'], 'needs workspace, no addon.js')
+// RA011: a surface the manifest asks for, without its file. The finding names the file
+// and what asks for it, a permission or a field.
+const surfaceOf = (problem) => [problem.code, problem.field, problem.need, problem.surface]
+const workspace = judged(SOUND, [{ name: 'tray.js', size: 1 }]).problems
+assert.deepStrictEqual(workspace.map(surfaceOf), [['RA011', 'needs', 'workspace', 'addon.js']], 'needs workspace, no addon.js')
+assert.strictEqual(workspace[0].message, '"needs" has "workspace", but there is no addon.js.')
 const tray = judged(SOUND, [{ name: 'addon.js', size: 1 }]).problems
-assert.deepStrictEqual(tray.map((problem) => problem.code), ['RA011'], 'a surface of the product, without its file')
+assert.deepStrictEqual(tray.map(surfaceOf), [['RA011', 'tray', undefined, 'tray.js']], 'a surface of the product, without its file')
 assert.strictEqual(tray[0].message, '"tray" is set, but there is no tray.js.')
 assert.deepStrictEqual(codesWith((manifest) => { delete manifest.tray }, [{ name: 'addon.js', size: 1 }]), [], 'no tray, no tray.js needed')
 // The worker is a surface of every product: `"worker": true` asks for worker.js.
 const worker = judged({ ...SOUND, worker: true }).problems
-assert.deepStrictEqual(worker.map((problem) => [problem.code, problem.field]), [['RA011', 'worker']], 'a worker without worker.js')
+assert.deepStrictEqual(worker.map(surfaceOf), [['RA011', 'worker', undefined, 'worker.js']], 'a worker without worker.js')
 assert.strictEqual(worker[0].message, '"worker" is set, but there is no worker.js.')
 assert.deepStrictEqual(codesOf(judged({ ...SOUND, worker: true }, [...ENTRIES, { name: 'worker.js', size: 1 }])), [], 'a worker with its worker.js')
+// The lens is asked for by its file alone: never missing, and there it passes as it is.
+assert.deepStrictEqual(codesWith(() => {}, ENTRIES), [], 'no lens.js is no problem: its file is the ask')
+assert.deepStrictEqual(codesWith(() => {}, [...ENTRIES, { name: 'lens.js', size: 1 }]), [], 'a lens.js passes')
+const lensAlone = judged({ ...SOUND, worker: true }, [{ name: 'lens.js', size: 1 }]).problems
+assert.deepStrictEqual(lensAlone.map((problem) => problem.surface), ['addon.js', 'worker.js', 'tray.js'],
+	'a lens.js stands in for no surface the manifest asks for, and the core\'s come first')
 
 // RA012: a path that cannot be laid down.
 const REFUSED_PATHS = [
@@ -145,6 +158,7 @@ try {
 	fs.writeFileSync(path.join(dir, 'addon.json'), JSON.stringify(SOUND))
 	fs.writeFileSync(path.join(dir, 'addon.js'), '// a')
 	fs.writeFileSync(path.join(dir, 'tray.js'), '// t')
+	fs.writeFileSync(path.join(dir, 'lens.js'), '// l')
 	fs.mkdirSync(path.join(dir, 'lib'))
 	fs.writeFileSync(path.join(dir, 'lib', 'Café menu.md'), 'Hello')
 	// What is there to build with and stays out of the archive.
@@ -166,7 +180,7 @@ try {
 	assert.ok(!back.error, `the archive reads back: ${JSON.stringify(back.error)}`)
 	assert.deepStrictEqual(
 		[...back.files.keys()].sort(),
-		['addon.js', 'addon.json', 'lib/Café menu.md', 'tray.js'],
+		['addon.js', 'addon.json', 'lens.js', 'lib/Café menu.md', 'tray.js'],
 		'only what runs, and nothing to build with'
 	)
 	for (const [name, body] of back.files) {
@@ -184,7 +198,8 @@ try {
 	assert.match(broken.stdout, /addon\.json: RA011 needs: /)
 	assert.ok(!fs.existsSync(path.join(dir, 'dist')), 'and nothing is built')
 	const json = JSON.parse(run('check', '--json').stdout)
-	assert.deepStrictEqual(json.problems.map((problem) => problem.code), ['RA011'], '--json says the same')
+	assert.deepStrictEqual(json.problems.map(surfaceOf), [['RA011', 'needs', 'workspace', 'addon.js']],
+		'--json says the same, with the file and what asks for it')
 
 	// No command, or a wrong one, prints the usage with the product's name.
 	const help = run()
