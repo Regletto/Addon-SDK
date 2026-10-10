@@ -2,6 +2,12 @@
 // `window.addon`. What only one product has lies in the declarations of that
 // product's SDK (its surfaces and `addon.<product>`), and they refer to this file. Together they
 // are the reference on regletto.com/developers.
+//
+// A call needs no permission unless its note names one. A permission stands in `needs` of
+// addon.json with its reason, the sentence the author reads before installing:
+// `{ "need": "net", "why": "Downloads the model that reads a picture." }`. The core's permissions,
+// `workspace` and `net`, carry no prefix; a product's carry the product's key from `engines`
+// and a colon, `<key>:read`.
 
 /**
  * A string in one language, or one per language: `{ de: 'Figuren', en: 'Characters' }`.
@@ -59,16 +65,27 @@ interface AddonFields<Id extends string | number = string | number> {
 	onPick?: (id: Id) => void
 }
 
-/** One row of a right-click menu. */
-interface AddonMenuRow {
+/** A row of the right-click menu of a list or a grid that does something. */
+interface AddonMenuChoice {
 	id: string
 	/** One language, or one per language. */
 	label: AddonText
+	/** A name from Material Symbols Rounded. */
 	icon?: string
+	/** A key shown at the right edge, `'Ctrl+D'`. Only shown: `addon.keys` lays a shortcut. */
 	key?: string
+	/** Called on the pick. */
 	on?: () => void
-	part?: string
+	part?: never
 }
+
+/** A parting line between two rows. */
+interface AddonMenuParting {
+	part: true
+}
+
+/** One row of a right-click menu: a choice, or a parting line. */
+type AddonMenuRow = AddonMenuChoice | AddonMenuParting
 
 /**
  * A list or a grid. Built, never updated: call it again and replace the node.
@@ -279,7 +296,7 @@ interface AddonShortcut {
 	id: string
 	/**
 	 * The default key, written the way Regletto writes it: `Ctrl`, `Alt`, `Shift` in this order and one key,
-	 * `'Ctrl+Shift+M'`. It needs `Ctrl` or `Alt`, or is an F-key alone. `''` is none, and the author may give one.
+	 * `'Ctrl+Shift+M'`. It needs `Ctrl` or `Alt`, unless it is an F-key. `''` is none, and the author may give one.
 	 * A key that is taken stays with the one who had it, and one on Backspace, Delete or an arrow stays the text's:
 	 * yours stands without one, and the log says so.
 	 * `Ctrl+Alt` with a character (`'Ctrl+Alt+M'`, also with `Shift`) is not given either: on keyboards with AltGr,
@@ -385,7 +402,7 @@ interface AddonNotice {
 	text: AddonText
 	/** `'done'` (the default), with a tick where it goes by itself, or `'failed'`, with an exclamation mark. */
 	kind?: 'done' | 'failed'
-	/** One button behind the sentence. */
+	/** One button behind the sentence. The line goes when the surface that called `notify()` closes: its button would press nothing. */
 	action?: {
 		/** 1 to 40 characters, or one per language. */
 		label: AddonText
@@ -427,7 +444,10 @@ interface AddonUse {
 	call<Answer = unknown, Query = unknown>(name: string, query?: Query): Promise<Answer | null>
 }
 
-/** `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data. */
+/**
+ * `window.addon`: the whole way an add-on reaches Regletto. Every refusal is a thrown error, never empty data.
+ * Of the core, worker.js has only `serve`, `provide`, `use`, `files`, `net` and `log`.
+ */
 interface Addon {
 	/** The language of the window, two letters (`'de'`, `'en'`). Does not change; `onLang()` says when it did. */
 	readonly lang: string
@@ -444,9 +464,12 @@ interface Addon {
 	readonly views: AddonViews
 	/** The note that travels with the project: `<project>/addons/<id>.json`. */
 	readonly store: AddonStore
-	/** The add-on's own folder for files, a downloaded model say. In worker.js too; not in overlay.js, and editor.js has none. */
+	/** The add-on's own folder for files, a downloaded model say. In addon.js, panel.js, dialog.js and worker.js; not in overlay.js, and editor.js has none. */
 	readonly files: AddonFiles
-	/** The internet, with `net` in needs: a service to ask, a model to download into `files`. In worker.js too; not in overlay.js, and editor.js has none. */
+	/**
+	 * The internet, with `net` in needs: a service to ask, a model to download into `files`.
+	 * In addon.js, panel.js, dialog.js and worker.js; not in overlay.js, and editor.js has none.
+	 */
 	readonly net: AddonNet
 	/** The add-on's worker.js, with `"worker": true` in addon.json. In addon.js, panel.js and dialog.js; not in overlay.js, and editor.js has none. */
 	readonly worker: AddonWorker
@@ -461,7 +484,7 @@ interface Addon {
 	 * `fetch`, `WebSocket` or `__filename`.
 	 * Its console and every error nobody caught go to the add-on's log; a stack names its files and no folder of the machine.
 	 */
-	serve(name: string, answer: (...args: any[]) => unknown): () => void
+	serve<Args extends unknown[] = unknown[]>(name: string, answer: (...args: Args) => unknown): () => void
 	/**
 	 * Hands `answer` to other add-ons under `name`, one of `provides` in addon.json; they reach it with `addon.use()`.
 	 * In addon.js, panel.js and worker.js: one of addon.js or panel.js is answered while that surface stands, one of
